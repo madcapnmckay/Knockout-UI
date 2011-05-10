@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Window Demo</title>
+	<link rel="stylesheet" href="../css/reset.css" type="text/css"/>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.core.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.widget.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.mouse.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.draggable.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
+	<script type="text/javascript" src="../lib/knockout-1.2.0.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.cookie.js"></script>
+	
+	<script type="text/javascript" src="../js/ui-util.js"></script>	
+	<script type="text/javascript" src="../js/ui-window.js"></script>	
+</head>
+<body data-bind="koWindowManager: windowViewModel">
+	<script type="text/javascript">
+		var debug = true;
+		
+		var createWindowBody = function(element, viewModel, parentViewModel) {
+			$(element).append('<div>Window Body Here</div>');
+		}
+	
+		var myModel = {
+			windows: [
+				{ 
+					name: "Main Window", 
+					create : createWindowBody, 
+					taskbarClass: 'tb-eyepatch', 
+					buttons : [ { iconClass : 'pin', onClick: 'togglePin', isFirst : true }, { iconClass : 'minimize', onClick: 'minimize', isLast : true } ] 
+				},
+				{ 
+					name: "Some other window", 
+					create : createWindowBody, 
+					taskbarClass: 'tb-folder', 
+					position : '500,100', 
+					buttons : [ { iconClass : 'pin', onClick: 'togglePin', isFirst : true }, { iconClass : 'minimize', onClick: 'minimize', isLast : true } ] 
+				}
+			]
+		};
+		myModel.windowViewModel = new ko.koWindowManager.viewModel({ windows: myModel.windows, taskbarClass : 'ep-taskbar' }); 
+		
+		$(function () {
+			ko.applyBindings(myModel);
+		});
+	</script>
+</body>
+</html>
