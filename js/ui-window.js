@@ -11,26 +11,27 @@
 		Button = function (data, parentViewModel) {
 			this.parentViewModel = parentViewModel;
 			this.iconClass = ko.observable(data.iconClass);
-			this.onClick = ko.observable(data.onClick);
-			this.position = data.position;
+			this.onClick = data.onClick;
 			this.isFirst = ko.observable(data.isFirst);
 			this.isLast = ko.observable(data.isLast);
 				
 			this.clicked = function (node) {
-				if (this.onClick() !== undefined) {
-					this.parentViewModel[this.onClick()]();
+				if (this.onClick !== undefined) {
+					if (this.onClick === 'minimize') {
+						this.parentViewModel.minimize();
+					} else if (typeof this.onClick == 'function') {
+						this.onClick.call(this.parentViewModel, this);
+					}					
 				}
 			}.bind(this);
 		},
 		Window = function (data, parentViewModel) {
 			this.parentViewModel = parentViewModel;
 			this.cssClass = ko.observable(data.cssClass || parentViewModel.cssClass());
-			this.isVisible = ko.observable(data.isVisible || true);
 			this.name = ko.observable(data.name);
-			this.width = ko.observable(500);
-			this.height = ko.observable(500);
+			this.width = ko.observable(data.width || 500);
+			this.height = ko.observable(data.height || 500);
 			
-			this.contents = data.contents;
 			this.create = data.create;
 			this.taskbarClass = data.taskbarClass;
 			this.buttons = ko.observableArray([]);
@@ -46,23 +47,19 @@
 				this.isMinimized(data.isMinimized);
 			}
 			
-			for (var i = 0; i < data.buttons.length; i += 1) {
-				data.buttons[i].position = i;
-				data.buttons[i].isFirst = (i === 0);
-				data.buttons[i].isLast = (i === data.buttons.length - 1);
-				this.buttons.push(new Button(data.buttons[i], this));
-			}
-			
-			this.show = function () {
-				
+			this.buttonsChange = function() {
+				for (var i = 0; i < data.buttons.length; i += 1) {
+					data.buttons[i].isFirst = (i === 0);
+					data.buttons[i].isLast = (i === data.buttons.length - 1);
+					this.buttons.push(new Button(data.buttons[i], this));
+				}
 			}.bind(this);
+			
+			this.buttonsChange();
+			this.buttons.subscribe(this.buttonsChange);
 			
 			this.minimize = function () {
 				this.isMinimized(!this.isMinimized());
-			}.bind(this);
-			
-			this.togglePin = function () {
-				alert('pinned');
 			}.bind(this);
 			
 			this.saveState = function () {
@@ -75,8 +72,8 @@
 	
     ko.koWindowManager = {
         viewModel: function (configuration) {
-			this.cssClass = ko.observable('ui-window');
-			this.taskbarClass = ko.observable('ui-taskbar');
+			this.cssClass = ko.observable(configuration.cssClass || 'ui-window');
+			this.taskbarClass = ko.observable(configuration.taskbarClass || 'ui-taskbar');
 			
 			this.windows = ko.observableArray([]);
 			ko.utils.arrayForEach(configuration.windows, function(data) {
@@ -109,7 +106,7 @@
 						
 	templateEngine.addTemplate("koWindowContainerTemplate", "\
 					<div class=\"window-container\" >\
-						<div class=\"windows\" data-bind='template: { name : \"koWindowTemplate\", foreach: windows }'\"></div>\
+						<div class=\"windows\" data-bind='template: { name : \"koWindowTemplate\", foreach: windows }'></div>\
 						<div class=\"${ taskbarClass }\">\
 							<div class=\"inner-taskbar\" data-bind='template: { name : \"koTaskbarItemTemplate\", foreach: windows }'></div>\
 						</div>\
@@ -135,7 +132,7 @@
 				windowVM.create(body, windowVM, viewModel);
 				//alert('visible '+ windowVM.isVisible() + ' min ' + windowVM.isMinimized());
 				
-				if (!windowVM.isVisible() || windowVM.isMinimized()) {
+				if (windowVM.isMinimized()) {
 					parent.get(0).style.display = "none";	
 				}
 			}

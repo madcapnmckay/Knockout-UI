@@ -1,0 +1,9 @@
+/**********************
+Dropdown
+**********************/
+.dropdown input { width: 13em; float: left;}
+.dropdown .button { margin-left: -1px; background: #E66B01 url('../images/dropdown-arrow.gif') no-repeat center 2px; border: 1px solid White; display: inline-block; height:29px; width:31px; }
+.dropdown .button { -moz-border-radius: 0 0.35em 0.35em 0;  -webkit-border-radius: 0 0.35em 0.35em 0;  border-radius: 0 0.35em 0.35em 0;  }
+.dropdown.open .button  { background-position: center -27px; }
+.dropdown .button:hover { background-color: transparent; }
+

@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Knockout UI - Autocomplete Binding</title>
+	<link rel="stylesheet" href="css/reset.css" type="text/css"/>
+	<link rel="stylesheet" href="css/style.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shCore.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shThemeDefault.css" type="text/css"/>
+
+	
+	<!-- Dependencies -->
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.core.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.widget.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.position.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.autocomplete.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
+	<script type="text/javascript" src="../lib/knockout-1.2.0.min.js"></script>
+	
+    <script type="text/javascript" src="js/shCore.js"></script>
+	<script type="text/javascript" src="js/shBrushXml.js"></script>
+	<script type="text/javascript" src="js/shBrushJScript.js"></script>
+	
+	<link rel="stylesheet" href="../css/ui-autocomplete.css" type="text/css"/>
+	<script type="text/javascript" src="../js/ui-autocomplete.js"></script>	
+</head>
+<body>
+	<div class="central-column">
+		<h1>Autocomplete Binding</h1>
+		<p>The Autocomplete binding is simply a wrapper around the jquery UI autocompleter. Its main use is that it allows you to include autocomplete functionality in the data-bind attribute of a knockout template.<p>
+		<p>Please refer to the <a href="http://jqueryui.com/demos/autocomplete/">jquery ui documentation</a> for further details </p>
+		<h2>Usage</h2>
+		<h3>Markup</h3>
+		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
+			<label>
+				Country (type some text)</label>
+			<input type="text" data-bind="autocomplete : autocompleteConfig" />
+		]]></script>
+		<h3>Javascript</h3>
+		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
+			var countriesViewModel = function() {
+				this.source = ['France', 'Germany', 'Spain', 'USA', 'United Kingdom', 'Canada', 'Mexico', 'China', 'Brazil', 'India', 'Thailand', 'Turkey'];
+
+				this.autocompleteConfig = function() {
+					return this;
+				}.bind(this);
+			};
+			
+			ko.applyBindings(countriesViewModel);
+		]]></script>
+		<h3>Results</h3>
+		<div id="mode1example" class="results">
+			<label>
+				Country (type some text)</label>
+			<input type="text" data-bind="autocomplete : autocompleteConfig" />
+		</div>
+		<h3>Dependencies</h3>
+		<ul class="dependencies">
+			<li>Knockout 1.2.0</li>
+			<li>Jquery 1.6+</li>
+			<li>Jquery tmpl</li>
+			<li>Jquery UI Core</li>
+			<li>Jquery UI Widget</li>
+			<li>Jquery UI Position</li>
+			<li>Jquery UI Autocomplete</li>
+		</ul>
+		<div class="footer">
+			<ul>
+				<li>License: <a href="http://www.opensource.org/licenses/mit-license.php">MIT http://www.opensource.org/licenses/mit-license.php</a></li>
+				<li>Project Home: <a href="https://github.com/madcapnmckay/Knockout-UI">https://github.com/madcapnmckay/Knockout-UI</a></li>
+			</ul>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var countriesViewModel = function() {
+			this.source = ['France', 'Germany', 'Spain', 'USA', 'United Kingdom', 'Canada', 'Mexico', 'China', 'Brazil', 'India', 'Thailand', 'Turkey'];
+
+			this.autocompleteConfig = function() {
+				return this;
+			}.bind(this);
+		};
+		
+		$(function () {
+			SyntaxHighlighter.all();
+		
+			ko.applyBindings(new countriesViewModel());
+		});
+	</script>
+</body>
+</html>

@@ -1,10 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-	<title>Window Demo</title>
-	<link rel="stylesheet" href="../css/reset.css" type="text/css"/>
-	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+	<title>Knockout UI - Window Bindings</title>
+	<link rel="stylesheet" href="css/reset.css" type="text/css"/>
+	<link rel="stylesheet" href="css/style.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shCore.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shThemeDefault.css" type="text/css"/>
 
+	<!-- Dependencies -->
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.ui.core.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.ui.widget.min.js"></script>
@@ -14,15 +17,143 @@
 	<script type="text/javascript" src="../lib/knockout-1.2.0.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.cookie.js"></script>
 	
+	<script type="text/javascript" src="js/shCore.js"></script>
+	<script type="text/javascript" src="js/shBrushXml.js"></script>
+	<script type="text/javascript" src="js/shBrushJScript.js"></script>
+	
+	<link rel="stylesheet" href="../css/ui-window.css" type="text/css"/>
 	<script type="text/javascript" src="../js/ui-util.js"></script>	
 	<script type="text/javascript" src="../js/ui-window.js"></script>	
 </head>
 <body data-bind="koWindowManager: windowViewModel">
-	<script type="text/javascript">
-		var debug = true;
+	<div class="central-column">
+		<h1>Window Manager Binding</h1>
+		<p>The window manager binding allows you to specify a number of window objects in a viewModel and for them to render as draggable, minimizable windows in the browser.</p>
+		<p>The contents of the window can be created by a supplied create function which is passed the containing element, the window object and the parent viewModel. You could 
+		call a subsequent ko.applyBindings to render further ui components in the window but be sure to limit its scope the the contents element.</p>
+		<p>If the <a href="https://github.com/carhartl/jquery-cookie">jquery cookie plugin</a> is include the windows will remember their positions between page refreshes.</p> 
+		<p><strong>Note: </strong>This feature will not work in chrome from a local file version of this example due to a restriction on writing local cookies.</p>
+		<h2>Usage</h2>
+		<h3>Markup</h3>
+		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
+			<body data-bind="koWindowManager: windowViewModel">
+		]]></script>
+		<h3>Javascript</h3>
+		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
+			var createWindowBody = function(element, viewModel, parentViewModel) {
+				$(element).append('<div>Window Body Here</div>');
+			}
+			
+			var clickHandler = function() {
+				alert('clicked');
+			}
 		
+			var myModel = {
+				windows: [
+					{ 
+						name: "Main Window", 
+						create : createWindowBody, 
+						taskbarClass: 'tb-eyepatch', 
+						isMinimized : true,
+						buttons : [ { iconClass : 'pin', onClick: function() { alert('test'); } }, 
+									{ iconClass : 'minimize', onClick: 'minimize' } 
+						] 
+					},
+					{ 
+						name: "Some other window", 
+						create : createWindowBody, 
+						taskbarClass: 'tb-folder', 
+						position : '1000,380', 
+						buttons : [ { iconClass : 'pin', onClick: clickHandler }, 
+									{ iconClass : 'minimize', onClick: 'minimize' } 
+						] 
+					}
+				]
+			};
+			myModel.windowViewModel = new ko.koWindowManager.viewModel({ windows: myModel.windows }); 
+			
+			ko.applyBindings(myModel);
+		]]></script>
+		<h3>Options</h3>
+		<div class="options">
+			<h4>Window Manager ViewModel</h4>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+						<th>Default</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr><td>cssClass</td><td>The default css class applied to all windows</td><td>'ui-window'</td></tr>
+					<tr><td>taskbarClass</td><td>The default css class applied to all taskbar icons</td><td>'ui-taskbar'</td></tr>
+					<tr><td>windows</td><td>The array of window objects</td><td></td></tr>
+				</tbody>
+			</table>
+			<h4>Window Objects</h4>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+						<th>Default</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr><td>name</td><td>The name displayed in the tooltip when minimized</td><td></td></tr>
+					<tr><td>width</td><td>The width in pixels</td><td>500</td></tr>
+					<tr><td>height</td><td>The height in pixels</td><td>500</td></tr>
+					<tr><td>cssClass</td><td>The css class applied to the window outer div</td><td>the same as the parent viewModel</td></tr>
+					<tr><td>taskbarClass</td><td>The css class applied to the window's icon on the taskbar</td><td></td></tr>
+					<tr><td>create (function)</td><td>Called to create the window body</td><td></td></tr>
+					<tr><td>buttons (array)</td><td>An array of button objects which specify the buttons on the window top bar</td><td></td></tr>
+					<tr><td>position</td><td>The initial position of the window specified as a pair of X,Y coordinates e.g. '1000,380'</td><td></td></tr>
+					<tr><td>isMinimized</td><td>Whether the window is minimized on first load</td><td>false</td></tr>
+				</tbody>
+			</table>
+			<h4>Button Objects</h4>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+						<th>Default</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr><td>iconClass</td><td>The ccs class applied to the button</td><td></td></tr>
+					<tr><td>onClick</td><td>The handler called when the button is clicked</td><td>500</td></tr>
+				</tbody>
+			</table>
+		</div>
+		<h3>Dependencies</h3>
+		<ul class="dependencies">
+			<li>Knockout 1.2.0</li>
+			<li>Jquery 1.6+</li>
+			<li>Jquery tmpl</li>
+			<li>Jquery cookie (optional)</li>
+			<li>Jquery UI Core</li>
+			<li>Jquery UI Widget</li>
+			<li>Jquery UI Mouse</li>
+			<li>Jquery UI Draggable</li>
+			<li>Knockout UI Util</li>
+		</ul>
+		<div class="footer">
+			<ul>
+				<li>License: <a href="http://www.opensource.org/licenses/mit-license.php">MIT http://www.opensource.org/licenses/mit-license.php</a></li>
+				<li>Project Home: <a href="https://github.com/madcapnmckay/Knockout-UI">https://github.com/madcapnmckay/Knockout-UI</a></li>
+				<li>Icons: <a href="http://p.yusukekamiyamane.com/">Yusuke Kamiyamane/</a></li>
+			</ul>
+		</div>
+	</div>
+	<script type="text/javascript">
 		var createWindowBody = function(element, viewModel, parentViewModel) {
 			$(element).append('<div>Window Body Here</div>');
+		}
+		
+		var clickHandler = function() {
+			alert('clicked');
 		}
 	
 		var myModel = {
@@ -31,20 +162,27 @@
 					name: "Main Window", 
 					create : createWindowBody, 
 					taskbarClass: 'tb-eyepatch', 
-					buttons : [ { iconClass : 'pin', onClick: 'togglePin', isFirst : true }, { iconClass : 'minimize', onClick: 'minimize', isLast : true } ] 
+					isMinimized : true,
+					buttons : [ { iconClass : 'pin', onClick: function() { alert('test'); } }, 
+								{ iconClass : 'minimize', onClick: 'minimize' } 
+					] 
 				},
 				{ 
 					name: "Some other window", 
 					create : createWindowBody, 
 					taskbarClass: 'tb-folder', 
-					position : '500,100', 
-					buttons : [ { iconClass : 'pin', onClick: 'togglePin', isFirst : true }, { iconClass : 'minimize', onClick: 'minimize', isLast : true } ] 
+					position : '1000,380', 
+					buttons : [ { iconClass : 'pin', onClick: clickHandler }, 
+								{ iconClass : 'minimize', onClick: 'minimize' } 
+					] 
 				}
 			]
 		};
-		myModel.windowViewModel = new ko.koWindowManager.viewModel({ windows: myModel.windows, taskbarClass : 'ep-taskbar' }); 
+		myModel.windowViewModel = new ko.koWindowManager.viewModel({ windows: myModel.windows }); 
 		
 		$(function () {
+			SyntaxHighlighter.all();
+		
 			ko.applyBindings(myModel);
 		});
 	</script>

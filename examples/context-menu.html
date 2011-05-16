@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Knockout UI - Context Menu Binding</title>
+	<link rel="stylesheet" href="css/reset.css" type="text/css"/>
+	<link rel="stylesheet" href="css/style.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shCore.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shThemeDefault.css" type="text/css"/>
+
+	<!-- Dependencies -->
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.position.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
+	<script type="text/javascript" src="../lib/knockout-1.2.0.min.js"></script>
+	<script type="text/javascript" src="../lib/knockout.mapping-latest.js"></script>
+	
+	<script type="text/javascript" src="js/shCore.js"></script>
+	<script type="text/javascript" src="js/shBrushXml.js"></script>
+	<script type="text/javascript" src="js/shBrushJScript.js"></script>
+	
+	<link rel="stylesheet" href="../css/ui-contextmenu.css" type="text/css"/>
+	<script type="text/javascript" src="../js/ui-util.js"></script>	
+	<script type="text/javascript" src="../js/ui-contextmenu.js"></script>	
+</head>
+<body>
+	<div class="central-column">
+		<h1>Context Menu Binding</h1>
+		<p>The context menu binding allows you to specify reactable context menus in json. Dom elements with the binding specify a build function that gets called when a right click operation is detected.</p>
+		<p>The build method allows you to customize which menu is displayed and which items on that menu are disabled.</p>
+		<h2>Usage</h2>
+		<h3>Markup</h3>
+		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
+			<img src="../images/skull_and_crossbones_large.png" 
+					alt="skull" title="right click" 
+					data-bind="contextMenu : pictureContext" />
+			<img src="../images/skull_and_crossbones_large.png" 
+					alt="skull" title="right click" 
+					style="float: right" 
+					data-bind="contextMenu : pictureContext2" />
+		]]></script>
+		<h3>Javascript</h3>
+		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
+			var myModel = {
+				buildPicture1Context : function() {
+					return { name : 'file', disable : [ 'Cut' ] };
+				},
+				buildPicture2Context : function() {
+					return { name : 'file', disable : [ 'Paste' ] };
+				},
+				contextMenus: [
+					{ name : 'file',
+					  width : 190,
+						items : [ 
+							{ text : 'Open',  run : function() { alert('open'); } },  
+							{ text : 'Cut',   run : function() { alert('cut'); } }, 
+							{ text : 'Copy',  run : function() { alert('copy'); }, iconClass: 'copy' }, 
+							{ text : 'Paste', run : function() { alert('paste'); }}, 
+							{ separator : true },
+							{ text : 'New', 
+								items : [
+									{ text : 'Page', run : function() { alert('new page'); }, iconClass: 'page' },
+									{ text : 'Folder', run : function() { alert('new folder'); }, iconClass: 'folder' },
+								] }	
+					] }
+				]
+			};
+			myModel.pictureContext = new ko.contextMenu.viewModel({ contextMenus : myModel.contextMenus, build : myModel.buildPicture1Context });
+			myModel.pictureContext2 = new ko.contextMenu.viewModel({ contextMenus : myModel.contextMenus, build : myModel.buildPicture2Context });
+			
+			ko.applyBindings(myModel);
+		]]></script>
+		<h3>Results</h3>
+		<div class="results">
+			<img src="../images/skull_and_crossbones_large.png" alt="skull" title="right click" data-bind="contextMenu : pictureContext" />
+			<img src="../images/skull_and_crossbones_large.png" alt="skull" title="right click" style="float: right" data-bind="contextMenu : pictureContext2" />
+			<br />
+			<br />
+			<p>Right click the two images to see the context menu</p>
+			<p>Notice how the same menu has different items disabled. Also notice the positioning flip behavior on the far right image.</p>
+		</div>
+		<h3>Dependencies</h3>
+		<ul class="dependencies">
+			<li>Knockout 1.2.0</li>
+			<li>Knockout Mapping Plugin</li>
+			<li>Jquery 1.6+</li>
+			<li>Jquery tmpl</li>
+			<li>Jquery UI Position</li>
+			<li>Knockout UI Util</li>
+		</ul>
+		<div class="footer">
+			<ul>
+				<li>License: <a href="http://www.opensource.org/licenses/mit-license.php">MIT http://www.opensource.org/licenses/mit-license.php</a></li>
+				<li>Project Home: <a href="https://github.com/madcapnmckay/Knockout-UI">https://github.com/madcapnmckay/Knockout-UI</a></li>
+				<li>Icons: <a href="http://p.yusukekamiyamane.com/">Yusuke Kamiyamane</a></li>
+				<li>Clipart: <a href="http://www.webweaver.nu/">Webweavers Free Clipart</a></li>
+			</ul>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var myModel = {
+			buildPicture1Context : function() {
+				return { name : 'file', disable : [ 'Cut' ] };
+			},
+			buildPicture2Context : function() {
+				return { name : 'file', disable : [ 'Paste' ] };
+			},
+			contextMenus: [
+				{ name : 'file',
+				  width : 190,
+					items : [ 
+						{ text : 'Open',  run : function() { alert('open'); } },  
+						{ text : 'Cut',   run : function() { alert('cut'); } }, 
+						{ text : 'Copy',  run : function() { alert('copy'); }, iconClass: 'copy' }, 
+						{ text : 'Paste', run : function() { alert('paste'); }}, 
+						{ separator : true },
+						{ text : 'New', 
+							items : [
+								{ text : 'Page', run : function() { alert('new page'); }, iconClass: 'page' },
+								{ text : 'Folder', run : function() { alert('new folder'); }, iconClass: 'folder' },
+							] }	
+				] }
+			]
+		};
+		myModel.pictureContext = new ko.contextMenu.viewModel({ contextMenus : myModel.contextMenus, build : myModel.buildPicture1Context });
+		myModel.pictureContext2 = new ko.contextMenu.viewModel({ contextMenus : myModel.contextMenus, build : myModel.buildPicture2Context });
+		
+		$(function () {
+			SyntaxHighlighter.all();
+		
+			ko.applyBindings(myModel);
+		});
+	</script>
+</body>
+</html>

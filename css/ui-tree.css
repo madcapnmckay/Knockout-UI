@@ -1,0 +1,39 @@
+/**********************
+Tree
+**********************/
+/* layout items */
+.tree { padding: 10px 3px; font-size: 12px; margin:0; line-height:1; }
+.tree li { display: block; white-space: nowrap; padding: 0; marging: 0; }
+/* node */
+.tree .node { padding: 2px 1px; /*display: inline-block; min-width: 248px;*/ }
+.tree .node.hover, .tree .node.selected {  -moz-border-radius:2px 2px 2px 2px; -webkit-border-radius: 2px; border-radius: 2px; padding: 1px 0;}
+.tree .node.hover { background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F9FBFD), to(#EBF3FD)); background-image: -moz-linear-gradient(top,  #F9FBFD,  #EBF3FD); border: solid 1px #B8D6FB; }
+.tree .node.selected { background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#DBEAFC), to(#C1DCFC)); background-image: -moz-linear-gradient(top,  #DBEAFC,  #C1DCFC); border: solid 1px #7DA2CE; }
+.tree .node.hover.selected { background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#DCEBFC), to(#C1DBFC)); background-image: -moz-linear-gradient(top,  #DCEBFC,  #C1DBFC); border: solid 1px #7DA2CE; }
+/* handle */
+.tree .node .handle  { width:16px; height:16px; display: inline-block; background-repeat: no-repeat; vertical-align: middle; }
+.tree .node .handle { background-image: url('../images/folder-arrow.png'); }
+.tree .node .handle.hover { background-position: -16px 0; }
+.tree li.open > .node > .handle { background-position: -32px 0; }
+.tree li.open > .node > .handle.hover { background-position: -48px 0; }
+.tree .empty .node .handle { background-image: none;  }
+/* icons */
+.tree .icon  { width:16px; height:16px; display: inline-block; vertical-align: middle; cursor: pointer; }
+.tree .folder > .node > .icon { background-image: url('../images/folder.png');  }
+.tree .folder.open > .node > .icon { background-image: url('../images/folder-open.png'); }
+.tree .group > .node > .icon { background-image: url('../images/blue-folder.png');  }
+.tree .group.open > .node > .icon { background-image: url('../images/blue-folder-open.png'); }
+.tree .page > .node > .icon { background-image: url('../images/document-globe.png');  }
+.tree .widget > .node > .icon { background-image: url('../images/puzzle.png');  }
+/* label */
+.tree .node label { display: inline; color: Black; padding: 1px 0 1px 5px; cursor: pointer; vertical-align: middle; -webkit-user-select:none; -moz-user-select:none; user-select: none; }
+/* rename */
+.tree .rename > .node { padding: 0;  }
+.tree .node  input.rename  { border: 1px solid #646464; padding: 0; vertical-align: middle; height: 16px; margin-left: 3px; }
+/* drag icon */
+.drag-icon { background-color: #C1DBFC; opacity: 0.5; filter:alpha(opacity=50);   border-radius: 4px; -moz-border-radius:4px 4px 4px 4px; -webkit-border-radius: 4px; border: solid 1px #B8D6FB; width: 35px; height: 35px; padding: 10px;
+			-moz-box-shadow: 3px 3px 3px #666; -webkit-box-shadow: 3px 3px 3px #666; box-shadow: 3px 3px 3px #666;}
+.drag-icon span { display: inline-block; width: 35px; height: 35px; }
+.drag-icon .folder { background-image: url('../images/folder-large.png'); }
+.drag-icon .page { background-image: url('../images/blue-document.png'); }
+.drag-icon .widget { background-image: url('../images/puzzle.png'); }

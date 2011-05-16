@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Knockout UI - Dropdown Demo</title>
+	<link rel="stylesheet" href="css/reset.css" type="text/css"/>
+	<link rel="stylesheet" href="css/style.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shCore.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shThemeDefault.css" type="text/css"/>
+
+	
+	<!-- Dependencies -->
+
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.core.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.widget.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.position.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.autocomplete.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
+	<script type="text/javascript" src="../lib/knockout-1.2.0.min.js"></script>
+	
+    <script type="text/javascript" src="js/shCore.js"></script>
+	<script type="text/javascript" src="js/shBrushXml.js"></script>
+	<script type="text/javascript" src="js/shBrushJScript.js"></script>
+	
+	<link rel="stylesheet" href="../css/ui-autocomplete.css" type="text/css"/>
+	<link rel="stylesheet" href="../css/ui-dropdown.css" type="text/css"/>
+	<script type="text/javascript" src="../js/ui-autocomplete.js"></script>	
+	<script type="text/javascript" src="../js/ui-dropdown.js"></script>	
+</head>
+<body>
+	<div class="central-column">
+		<h1>Dropdown Binding</h1>
+		<p>The Dropdown binding implements a css skinable replacement for the traditional html select element. It adds autocompleting capability as well as the conventional arrow button for maximum usability.<p>
+		<p>In its default operation it hides the select element and uses its existing items to generate the data for the autocompleter<p>
+		<p>In this mode an optional observable can be bound to the dropdown itself to reflect the selected option on your viewmodel<p>
+		<p>The other option is to leverage Knockouts existing "options" to provide the data for the select. In this mode, if the observable array that is bound to options is updated the dropdown control will also reflect the change<p>
+		<p>In this mode the standard "value" binding should be used to relect the change back to the viewmodel</p>
+		
+		<h2>Usage (standard select element)</h2>
+		<h3>Markup</h3>
+		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
+			<label>
+				Language</label>
+			<select data-bind="dropdown: selectedLanguage">
+				<option>ActionScript</option>
+				<option>AppleScript</option>
+				<option>Asp</option>
+				<option>BASIC</option>
+				<option>C</option>
+				<option>C++</option>
+				<option>COBOL</option>
+				<option>ColdFusion</option>
+				<option>Erlang</option>
+				<option>Fortran</option>
+			</select>
+			<br/>
+			<label>Bound Value : <span data-bind="text : selectedLanguage"></span></label>
+			<br/>
+			<button data-bind="click : function() { selectedLanguage('COBOL'); }">Set Value</button>
+			<button class="toggleSelect">Toggle Select</button>
+		]]></script>
+		<h3>Javascript</h3>
+		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
+			var languageViewModel = {
+				selectedLanguage : ko.observable('')
+			};
+			
+			ko.applyBindings(countriesViewModel);
+		]]></script>
+		<h3>Results</h3>
+		<div id="mode1example" class="results">
+			<label>
+				Language</label>
+			<select data-bind="dropdown: selectedLanguage">
+				<option>ActionScript</option>
+				<option>AppleScript</option>
+				<option>Asp</option>
+				<option>BASIC</option>
+				<option>C</option>
+				<option>C++</option>
+				<option>COBOL</option>
+				<option>ColdFusion</option>
+				<option>Erlang</option>
+				<option>Fortran</option>
+			</select>
+			<br/>
+			<label>Bound Value : <span data-bind="text : selectedLanguage"></span></label>
+			<br/>
+			<button data-bind="click : function() { selectedLanguage('COBOL'); }">Set Value</button>
+			<button class="toggleSelect">Toggle Select</button>
+		</div>
+		<h2>Usage (with the options binding)</h2>
+		<h3>Markup</h3>
+		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
+			<label>
+				Country</label>
+			<select data-bind="options: availableCountries, optionsCaption : 'Choose...', value : selectedCountry,  dropdown: {}"></select>
+			<br/>
+			<label>Bound Value : <span data-bind="text : selectedCountry"></span></label>
+			<br/>
+			<button data-bind="click : addCountry">Add Country</button>
+			<button class="toggleSelect">Toggle Select</button>
+		]]></script>
+		<h3>Javascript</h3>
+		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
+			var countriesViewModel = {
+				selectedCountry : ko.observable(''),
+				availableCountries: ko.observableArray(['France', 'Germany', 'Spain', 'USA', 'United Kingdom', 'Canada', 'Mexico']), // These are the initial options
+				extraCountries: ko.observableArray(['China', 'Brazil', 'India', 'Thailand', 'Turkey']),
+
+				addCountry : function () {
+					var newCountry = this.extraCountries.pop();
+					if (newCountry !== undefined) {
+						this.availableCountries.push(newCountry);
+					}
+				}
+			};
+			
+			ko.applyBindings(countriesViewModel);
+		]]></script>
+		<h3>Results</h3>
+		<div id="mode2example" class="results">
+			<label>
+				Country</label>
+			<select data-bind="options: availableCountries, optionsCaption : 'Choose...', value : selectedCountry,  dropdown: {}"></select>
+			<br/>
+			<label>Bound Value : <span data-bind="text : selectedCountry"></span></label>
+			<br/>
+			<button data-bind="click : addCountry">Add Country</button>
+			<button class="toggleSelect">Toggle Select</button>
+		</div>
+		<h3>Dependencies</h3>
+		<ul class="dependencies">
+			<li>Knockout 1.2.0</li>
+			<li>Jquery 1.6+</li>
+			<li>Jquery tmpl</li>
+			<li>Jquery UI Core</li>
+			<li>Jquery UI Widget</li>
+			<li>Jquery UI Position</li>
+			<li>Jquery UI Autocomplete</li>
+			<li>Knockout UI Autocomplete</li>
+		</ul>
+		<div class="footer">
+			<ul>
+				<li>License: <a href="http://www.opensource.org/licenses/mit-license.php">MIT http://www.opensource.org/licenses/mit-license.php</a></li>
+				<li>Project Home: <a href="https://github.com/madcapnmckay/Knockout-UI">https://github.com/madcapnmckay/Knockout-UI</a></li>
+			</ul>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var languageViewModel = {
+			selectedLanguage : ko.observable('')
+		};
+		
+		var countriesViewModel = {
+			selectedCountry : ko.observable(''),
+			availableCountries: ko.observableArray(['France', 'Germany', 'Spain', 'USA', 'United Kingdom', 'Canada', 'Mexico']), // These are the initial options
+			extraCountries: ko.observableArray(['China', 'Brazil', 'India', 'Thailand', 'Turkey']),
+
+			addCountry : function () {
+				var newCountry = this.extraCountries.pop();
+				if (newCountry !== undefined) {
+					this.availableCountries.push(newCountry);
+				}
+			}
+		};
+		
+		$(function () {
+			SyntaxHighlighter.all();
+			
+			$(".toggleSelect").click(function() {
+				$(this).closest('.results').children('select').toggle();
+			});
+		
+			ko.applyBindings(languageViewModel, document.getElementById('mode1example'));
+			ko.applyBindings(countriesViewModel, document.getElementById('mode2example'));
+		});
+	</script>
+</body>
+</html>

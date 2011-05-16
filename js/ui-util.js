@@ -1,4 +1,35 @@
 /*global window, $, ko */
+ko.bindingHandlers.hover = {
+	'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {
+		var $element = $(element),
+			value = ko.utils.unwrapObservable(valueAccessor());
+
+		if (typeof(value) === 'string') {
+			$element.hover(
+				function () { 
+					$(this).addClass(value);
+				},
+				function () {
+					$(this).removeClass(value);
+				}
+			);
+		} else {
+			$element.hover(
+				function () {
+					if (value.over !== undefined) {
+						value.over();
+					}
+				}, 
+				function () { 
+					if (value.out !== undefined) {
+						value.out();
+					}
+				}
+			);
+		}
+	}
+};
+
 $.maxZIndex = $.fn.maxZIndex = function (opt) {
 	/// <summary>
     /// Returns the max zOrder in the document (no parameter)

@@ -1,8 +1,5 @@
-body, html { height: 100%; }
-body, input { font-family: "Segoe UI", Frutiger, "Frutiger Linotype", Univers, Calibri, "Gill Sans", "Gill Sans MT", "Myriad Pro", Myriad, "DejaVu Sans Condensed", 
-                 "Liberation Sans", "Nimbus Sans L", Tahoma, Geneva, "Helvetica Neue", Helvetica, Arial, sans serif; font-size: 9pt; line-height: 12px; }
 /**********************
-Eyepatch Window
+Window
 **********************/
 .ui-window {  background-color: transparent; z-index:100000;
 			-webkit-box-shadow:0 0 5px Black; -moz-box-shadow: 0 0 5px Black; box-shadow:0 0 5px Black; display: inline-block; padding: 35px 5px 5px; }

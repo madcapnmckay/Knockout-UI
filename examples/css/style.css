@@ -1,0 +1,42 @@
+body, html { height: 100%; }
+body, input, select { font-family: "Segoe UI", Frutiger, "Frutiger Linotype", Univers, Calibri, "Gill Sans", "Gill Sans MT", "Myriad Pro", Myriad, "DejaVu Sans Condensed", 
+                 "Liberation Sans", "Nimbus Sans L", Tahoma, Geneva, "Helvetica Neue", Helvetica, Arial, sans serif; font-size: 9pt; line-height: 12px; }
+
+a { cursor: pointer; }
+body 
+{
+    background: none repeat scroll 0 0 #E66B01;
+    color: #000000;
+    font-size:100%;
+    line-height: 1.25;
+    position: relative;
+    -webkit-text-size-adjust: 100%;
+	padding-top : 20px;
+}
+strong { font-weight: bold; }
+input, select, textarea { font-size: 1em; padding: 3px 5px; border: 1px solid White;}
+label, select { display: block; padding: 0 0 5px 0; }
+
+h1 { font-size:4em; padding-bottom:0.4em; }
+h2 { font-size:1.8em; padding:0.5em 0; }
+h3 { font-size:1.2em; font-weight:bold; padding:1em 0; }
+h4 { font-style:italic; padding:0.8em 0; }
+
+p { margin-bottom: 20px; }
+li { padding: 5px; }
+				 
+	 
+.central-column { margin: 0 auto; width: 900px; background-color: white; border-radius: 1em; box-shadow: 0 0 1.1em #666666; opacity: 0.9; padding: 1.25em; }
+.footer { margin-top: 40px; padding: 20px 0 0; border-top: 1px solid #666666; }				 
+.results { background-color: #121212; border-radius: 1em;  padding: 20px; color: White; margin-bottom: 30px; padding: 20px 20px 50px; overflow:hidden; }
+.dependencies  { list-style-type:disc; padding: 0 0 0 30px; }
+.options  table { border-width: 1px; border-spacing: 0px; border-style: none;	border-color: gray;	border-collapse: collapse; background-color: rgb(255, 245, 238); }
+.options table th, .options  table td { border-width: 1px; padding: 4px; border-style: dotted; border-color: black; background-color: rgb(255, 250, 250); }
+.options table th { font-weight: bold; }
+
+.container { background-color: White; height: 300px; } 
+.left-container { width: 25%; float: left; }
+.right-container { width: 74%; float: left; height: 100%; border-left: 1px solid #B8D6FB; }
+
+.logger { padding: 10px; }
+.logger * { color: Black; font-size: 12px; }
