@@ -85,7 +85,7 @@
         }
     };
 	
-	/*templateEngine.addTemplate("contextItemTemplate", "\
+	templateEngine.addTemplate("contextItemTemplate", "\
 					<li data-bind=\"subContext: hasChildren(), click : onClick, bubble : false, css : { separator : separator, disabled : disabled }, style : { width : itemWidth() }\">\
 						<span class=\"inner\"><span class=\"icon ${iconClass}\"></span><label data-bind=\"css : { parent : hasChildren() }, style : { width : labelWidth() }\">\
 							${ text }</label></span>\
@@ -99,7 +99,7 @@
 	templateEngine.addTemplate("contextMenuTemplate", "\
 					<div class=\"ui-context nocontext\" style=\"position:absolute;\" data-bind=\"position: { width: menu.width(), of : mousePosition }, style : { zIndex : zIndex }\">\
 						<ul data-bind='template: { name: \"contextItemTemplate\", foreach: menu.items }'></ul>\
-					</div>");*/
+					</div>");
 
 	ko.bindingHandlers.contextMenu = {
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {

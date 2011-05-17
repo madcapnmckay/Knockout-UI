@@ -29,6 +29,7 @@ li { padding: 5px; }
 .central-column { margin: 0 auto; width: 900px; background-color: white; border-radius: 1em; box-shadow: 0 0 1.1em #666666; opacity: 0.9; padding: 1.25em; }
 .footer { margin-top: 40px; padding: 20px 0 0; border-top: 1px solid #666666; }				 
 .results { background-color: #121212; border-radius: 1em;  padding: 20px; color: White; margin-bottom: 30px; padding: 20px 20px 50px; overflow:hidden; }
+.results.white { background-color: White; border-color: #121212; border-width: 1px; border-radius: 1em;  padding: 20px; color: Black; margin-bottom: 30px; padding: 20px 20px 50px; overflow:hidden; }
 .dependencies  { list-style-type:disc; padding: 0 0 0 30px; }
 .options  table { border-width: 1px; border-spacing: 0px; border-style: none;	border-color: gray;	border-collapse: collapse; background-color: rgb(255, 245, 238); }
 .options table th, .options  table td { border-width: 1px; padding: 4px; border-style: dotted; border-color: black; background-color: rgb(255, 250, 250); }
