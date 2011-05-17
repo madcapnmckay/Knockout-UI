@@ -18,11 +18,11 @@
 						return new MenuItem(options.data, self);
 					}
 				}
-			}			
+			};			
 			ko.mapping.fromJS(data, itemMapping, this);
 		},
 		MenuItem = function (data, container) {
-			this.dataItem;
+			this.dataItem = {};
 			this.container = container;
 			this.text = ko.observable(data.text || '');
 			this.iconClass = ko.observable(data.iconClass);
@@ -79,13 +79,13 @@
 						return new Menu(options.data, self);
 					}
 				}
-			}
+			};
 			
 			ko.mapping.fromJS(configuration, menuMapping, this);
         }
     };
 	
-	templateEngine.addTemplate("contextItemTemplate", "\
+	/*templateEngine.addTemplate("contextItemTemplate", "\
 					<li data-bind=\"subContext: hasChildren(), click : onClick, bubble : false, css : { separator : separator, disabled : disabled }, style : { width : itemWidth() }\">\
 						<span class=\"inner\"><span class=\"icon ${iconClass}\"></span><label data-bind=\"css : { parent : hasChildren() }, style : { width : labelWidth() }\">\
 							${ text }</label></span>\
@@ -99,7 +99,7 @@
 	templateEngine.addTemplate("contextMenuTemplate", "\
 					<div class=\"ui-context nocontext\" style=\"position:absolute;\" data-bind=\"position: { width: menu.width(), of : mousePosition }, style : { zIndex : zIndex }\">\
 						<ul data-bind='template: { name: \"contextItemTemplate\", foreach: menu.items }'></ul>\
-					</div>");
+					</div>");*/
 
 	ko.bindingHandlers.contextMenu = {
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {
@@ -129,8 +129,8 @@
 								}
 							}
 							// assign the data item
-							for (var i = 0; i < config.menu.items().length; i += 1) {
-								config.menu.items()[i].addDataItem(viewModel);
+							for (var j = 0; i < config.menu.items().length; j += 1) {
+								config.menu.items()[j].addDataItem(viewModel);
 							}
 							
 							// calculate z-index
@@ -138,7 +138,7 @@
 							$element.parents().each(function() {
 								var z = $(this).css('zIndex');
 								if (z !== 'auto') {
-									z = parseInt(z);
+									z = parseInt(z, 10);
 									if (z > maxZ) {
 										maxZ = z;
 									}

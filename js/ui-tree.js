@@ -52,7 +52,7 @@
 			
 			this.unqiueIdentifier = function() {
 				return this.viewModel.id() + '-' + this.id();
-			}
+			};
 			
 			// load open status from cookie
 			this.isOpen = ko.observable(false);
@@ -138,7 +138,7 @@
 					// the addNode handler must return an id for the new node
 					var result = viewModel.handlers.addNode(this);
 					if (result !== undefined && result !== false && result !== null) {
-						var newNode = new Node({ id : result, name : name, children: [], cssClass: type}, self, this.viewModel)
+						var newNode = new Node({ id : result, name : name, children: [], cssClass: type}, self, this.viewModel);
 						this.children.push(newNode);				
 						openSelfAndParents(this);
 						this.isSelected(false);
@@ -220,7 +220,7 @@
 						$.cookie(this.viewModel.id() + 'active', this.id()); 
 					}
 				}
-			}
+			};
 		};
 	
     ko.tree = {

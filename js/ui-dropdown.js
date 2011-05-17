@@ -1,4 +1,5 @@
 ﻿/*global document, window, $, ko, debug, setTimeout, alert */
+
 (function () {
     // private functions/variables
     var templateEngine = new ko.jqueryTmplTemplateEngine();
@@ -120,10 +121,10 @@
         }
     };
 
-    templateEngine.addTemplate("dropdownTemplate", "\
+    /*templateEngine.addTemplate("dropdownTemplate", "\
                                 <div class=\"dropdown\">\
                                 <input type=\"text\" data-bind=\"value: selectedText(), autocomplete : $data\" /><a class=\"button\" tabindex=\"-1\" data-bind=\"click : showAll\"></a>\
-                                </div>");
+                                </div>");*/
 
     ko.bindingHandlers.dropdown = {
         init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
@@ -150,7 +151,7 @@
 
 					_boundValue = valueAccessor();
 					if (value !== alreadySelected) {
-						var matchingOptions = $select.children('option').filter(function() { return $(this).text() == value || $(this).val() == value; });
+						var matchingOptions = $select.children('option').filter(function() { return $(this).text() === value || $(this).val() === value; });
 						if (matchingOptions.length > 0) {
 
 							// value is valid change select

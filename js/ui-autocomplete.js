@@ -1,10 +1,11 @@
-﻿ko.bindingHandlers.autocomplete = {
+﻿/*global document, window, $, ko, debug, setTimeout, alert */
+ko.bindingHandlers.autocomplete = {
     init: function (element, valueAccessor, allBindings, viewModel) {
         var $element = $(element),
 			value = valueAccessor(),
-            $config = typeof(value) == 'function' ? value() : value;
+            $config = typeof(value) === 'function' ? value() : value;
 
-        $element.autocomplete($config)
+        $element.autocomplete($config);
 
         $config.search = function (term) {
             if ($element.autocomplete("widget").is(":visible")) {
@@ -25,6 +26,6 @@
         $element.data("autocomplete")._resizeMenu = function () {
             var ul = this.menu.element;
             ul.outerWidth(this.element.outerWidth());
-        }
+        };
     }
 };

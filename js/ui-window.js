@@ -39,7 +39,7 @@
 			var inputPosition = $.cookie(this.name() + 'position') || data.position;
 			this.position = ko.observable(inputPosition || '10,10');
 			var savedMinimized = $.cookie(this.name() + 'state');
-			this.isMinimized = ko.observable(false)
+			this.isMinimized = ko.observable(false);
 			if (savedMinimized !== null) {
 				this.isMinimized(savedMinimized === 'true');
 			} 
