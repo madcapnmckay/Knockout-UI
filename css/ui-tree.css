@@ -7,9 +7,9 @@ Tree
 /* node */
 .tree .node { padding: 2px 1px; /*display: inline-block; min-width: 248px;*/ }
 .tree .node.hover, .tree .node.selected {  -moz-border-radius:2px 2px 2px 2px; -webkit-border-radius: 2px; border-radius: 2px; padding: 1px 0;}
-.tree .node.hover { background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F9FBFD), to(#EBF3FD)); background-image: -moz-linear-gradient(top,  #F9FBFD,  #EBF3FD); border: solid 1px #B8D6FB; }
-.tree .node.selected { background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#DBEAFC), to(#C1DCFC)); background-image: -moz-linear-gradient(top,  #DBEAFC,  #C1DCFC); border: solid 1px #7DA2CE; }
-.tree .node.hover.selected { background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#DCEBFC), to(#C1DBFC)); background-image: -moz-linear-gradient(top,  #DCEBFC,  #C1DBFC); border: solid 1px #7DA2CE; }
+.tree .node.hover { background-color: #F9FBFD;  background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F9FBFD), to(#EBF3FD)); background-image: -moz-linear-gradient(top,  #F9FBFD,  #EBF3FD); border: solid 1px #B8D6FB; }
+.tree .node.selected { background-color: #DBEAFC; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#DBEAFC), to(#C1DCFC)); background-image: -moz-linear-gradient(top,  #DBEAFC,  #C1DCFC); border: solid 1px #7DA2CE; }
+.tree .node.hover.selected { background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#DCEBFC), to(#C1DBFC)); background-color:  background-image: #DCEBFC; -moz-linear-gradient(top,  #DCEBFC,  #C1DBFC); border: solid 1px #7DA2CE; }
 /* handle */
 .tree .node .handle  { width:16px; height:16px; display: inline-block; background-repeat: no-repeat; vertical-align: middle; }
 .tree .node .handle { background-image: url('../images/folder-arrow.png'); }

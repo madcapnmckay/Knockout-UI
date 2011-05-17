@@ -4,8 +4,7 @@
     // Private function
     var logger = function (log, logTo) {
 			if (typeof debug !== 'undefined')
-			{
-				console.debug(new Date().toGMTString() + ' : '  + log);		
+			{	
 				$('<div></div>').appendTo(logTo || '#log').text(new Date().toGMTString() + ' : ui-tree.js - '  + log);
 			}
 		},

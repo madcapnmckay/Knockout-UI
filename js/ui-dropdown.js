@@ -121,10 +121,7 @@
         }
     };
 
-    templateEngine.addTemplate("dropdownTemplate", "\
-                                <div class=\"dropdown\">\
-                                <input type=\"text\" data-bind=\"value: selectedText(), autocomplete : $data\" /><a class=\"button\" tabindex=\"-1\" data-bind=\"click : showAll\"></a>\
-                                </div>");
+    templateEngine.addTemplate("dropdownTemplate", "<div class=\"dropdown\"><input type=\"text\" data-bind=\"value: selectedText(), autocomplete : $data\" /><a class=\"button\" tabindex=\"-1\" data-bind=\"click : showAll\"></a></div>");
 
     ko.bindingHandlers.dropdown = {
         init: function (element, valueAccessor, allBindingsAccessor, viewModel) {

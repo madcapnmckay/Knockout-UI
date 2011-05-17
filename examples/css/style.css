@@ -14,7 +14,7 @@ body
 	padding-top : 20px;
 }
 strong { font-weight: bold; }
-input, select, textarea { font-size: 1em; padding: 3px 5px; border: 1px solid White;}
+input, select, textarea { font-size: 1em; padding: 3px 5px; border: 1px solid White; line-height: 1.4375;}
 label, select { display: block; padding: 0 0 5px 0; }
 
 h1 { font-size:4em; padding-bottom:0.4em; }
