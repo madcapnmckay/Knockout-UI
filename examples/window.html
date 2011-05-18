@@ -33,6 +33,12 @@
 		call a subsequent ko.applyBindings to render further ui components in the window but be sure to limit its scope the the contents element.</p>
 		<p>If the <a href="https://github.com/carhartl/jquery-cookie">jquery cookie plugin</a> is include the windows will remember their positions between page refreshes.</p> 
 		<p><strong>Note: </strong>This feature will not work in chrome from a local file version of this example due to a restriction on writing local cookies.</p>
+		<p>Normally you see the results last but in this case it is important that the button is at the top of the page.</p>
+		<h3>Results</h3>
+		<div class="results">
+			<label>Click the button below to create a new window. Each new window will be closable.</label>
+			<button data-bind="click : createNewWindow">Add Window</button>
+		</div>
 		<h2>Usage</h2>
 		<h3>Markup</h3>
 		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
@@ -48,31 +54,47 @@
 				alert('clicked');
 			}
 		
-			var myModel = {
-				windows: [
-					{ 
-						name: "Main Window", 
-						create : createWindowBody, 
-						taskbarClass: 'tb-eyepatch', 
-						isMinimized : true,
-						buttons : [ { iconClass : 'pin', onClick: function() { alert('test'); } }, 
-									{ iconClass : 'minimize', onClick: 'minimize' } 
-						] 
-					},
-					{ 
-						name: "Some other window", 
-						create : createWindowBody, 
-						taskbarClass: 'tb-folder', 
-						position : '1000,380', 
-						buttons : [ { iconClass : 'pin', onClick: clickHandler }, 
-									{ iconClass : 'minimize', onClick: 'minimize' } 
-						] 
-					}
-				]
-			};
-			myModel.windowViewModel = new ko.koWindowManager.viewModel({ windows: myModel.windows }); 
-			
-			ko.applyBindings(myModel);
+			var nextId = 3, myModel = function() {
+				this.windowViewModel = new ko.koWindowManager.viewModel({ 
+					windows: [
+						{ 
+							id : "1",
+							name: "Main Window", 
+							create : createWindowBody, 
+							taskbarClass: 'tb-eyepatch', 
+							isMinimized : true,
+							buttons : [ { iconClass : 'pin', onClick: function() { alert('test'); } }, 
+										{ iconClass : 'minimize', onClick: 'minimize' } 
+							] 
+						},
+						{ 
+							id : "2",
+							name: "Some other window", 
+							create : createWindowBody, 
+							taskbarClass: 'tb-folder', 
+							position : '1000,380', 
+							buttons : [ { iconClass : 'pin', onClick: clickHandler }, 
+										{ iconClass : 'minimize', onClick: 'minimize' } 
+							] 
+						}
+					] 
+				}); 
+				
+				this.createNewWindow = function () {
+					this.windowViewModel.addWindow({ 
+							id : nextId,
+							name: "Main Window", 
+							create : createWindowBody, 
+							taskbarClass: 'tb-eyepatch',
+							buttons : [ { iconClass : 'close', onClick: 'close', cssClass: 'title-button red'}, 
+										{ iconClass : 'minimize', onClick: 'minimize' } 
+							] 
+						});
+					nextId++;
+				}
+			}
+
+			ko.applyBindings(new myModel());
 		]]></script>
 		<h3>Options</h3>
 		<div class="options">
@@ -101,6 +123,16 @@
 					</tr>
 				</thead>
 				<tbody>
+					<tr><td>id</td><td>The unique id of the window</td><td></td></tr>
+					<tr><td>contents</td>
+						<td>
+							<p>An object that can be used to store a subViewModel for the window contents. To run a sub applyBindings called window the window create menthod you could do something like</p>
+							<script type="syntaxhighlighter" class="brush: js"><![CDATA[
+								$(element).append('<div class="some-css-class" data-bind="somebinding : contents"></div>');
+								ko.applyBindings(viewModel, element);
+							]]></script>
+						</td>
+						<td></td></tr>
 					<tr><td>name</td><td>The name displayed in the tooltip when minimized</td><td></td></tr>
 					<tr><td>width</td><td>The width in pixels</td><td>500</td></tr>
 					<tr><td>height</td><td>The height in pixels</td><td>500</td></tr>
@@ -122,8 +154,23 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr><td>iconClass</td><td>The ccs class applied to the button</td><td></td></tr>
+					<tr><td>iconClass</td><td>The ccs class applied to icon of the button</td><td></td></tr>
+					<tr><td>cssClass</td><td>The ccs class applied to the button itself</td><td></td></tr>
 					<tr><td>onClick</td><td>The handler called when the button is clicked</td><td>500</td></tr>
+				</tbody>
+			</table>
+			
+			<h4>Methods</h4>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr><td>addWindow(data)</td><td>Add a new window. Takes a json object describing the window to create (see above)</td><td></td></tr>
+					<tr><td>removeWindow(id)</td><td>Remove a window. Takes an id of the window to remove.</td><td></td></tr>
 				</tbody>
 			</table>
 		</div>
@@ -156,34 +203,50 @@
 			alert('clicked');
 		}
 	
-		var myModel = {
-			windows: [
-				{ 
-					name: "Main Window", 
-					create : createWindowBody, 
-					taskbarClass: 'tb-eyepatch', 
-					isMinimized : true,
-					buttons : [ { iconClass : 'pin', onClick: function() { alert('test'); } }, 
-								{ iconClass : 'minimize', onClick: 'minimize' } 
-					] 
-				},
-				{ 
-					name: "Some other window", 
-					create : createWindowBody, 
-					taskbarClass: 'tb-folder', 
-					position : '1000,380', 
-					buttons : [ { iconClass : 'pin', onClick: clickHandler }, 
-								{ iconClass : 'minimize', onClick: 'minimize' } 
-					] 
-				}
-			]
-		};
-		myModel.windowViewModel = new ko.koWindowManager.viewModel({ windows: myModel.windows }); 
+		var nextId = 3, myModel = function() {
+			this.windowViewModel = new ko.koWindowManager.viewModel({ 
+				windows: [
+					{ 
+						id : "1",
+						name: "Main Window", 
+						create : createWindowBody, 
+						taskbarClass: 'tb-eyepatch', 
+						isMinimized : true,
+						buttons : [ { iconClass : 'pin', onClick: function() { alert('test'); } }, 
+									{ iconClass : 'minimize', onClick: 'minimize' } 
+						] 
+					},
+					{ 
+						id : "2",
+						name: "Some other window", 
+						create : createWindowBody, 
+						taskbarClass: 'tb-folder', 
+						position : '1000,380', 
+						buttons : [ { iconClass : 'pin', onClick: clickHandler }, 
+									{ iconClass : 'minimize', onClick: 'minimize' } 
+						] 
+					}
+				] 
+			}); 
+			
+			this.createNewWindow = function () {
+				this.windowViewModel.addWindow({ 
+						id : nextId,
+						name: "Main Window", 
+						create : createWindowBody, 
+						taskbarClass: 'tb-eyepatch',
+						buttons : [ { iconClass : 'close', onClick: 'close', cssClass: 'title-button red'}, 
+									{ iconClass : 'minimize', onClick: 'minimize' } 
+						] 
+					});
+				nextId++;
+			}
+		}
 		
 		$(function () {
 			SyntaxHighlighter.all();
 		
-			ko.applyBindings(myModel);
+			ko.applyBindings(new myModel());
 		});
 	</script>
 </body>
