@@ -22,6 +22,17 @@
 			this.parent = ko.observable(parent);
 			/*this.id = ko.observable(data.id)*/
 			this.contextMenu = viewModel.contextMenu;
+			
+			this.level = ko.dependentObservable(function () {
+				try {
+					var pname = this.parent().name(),
+						plevel = this.parent().level();
+					return this.parent().level() + 1; 
+				} catch (err) { 
+					return 0; 
+				}
+			}, this);
+			
 			// assign the childrens parent
 			var self = this, vm = this.viewModel, openSelfAndParents, 
 				childMapping =  {
@@ -34,16 +45,6 @@
 			
 			// map incoming data
 			ko.mapping.fromJS(data, childMapping, this);
-			
-			this.level = ko.dependentObservable(function () {
-				try {
-					var pname = this.parent().name(),
-						plevel = this.parent().level();
-					return this.parent().level() + 1; 
-				} catch (err) { 
-					return 0; 
-				}
-			}, this);
 			
 			// defaults
 			this.cssClass = ko.observable(data.cssClass || 'folder');
