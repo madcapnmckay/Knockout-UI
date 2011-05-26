@@ -13,6 +13,7 @@
 			this.iconClass = ko.observable(data.iconClass);
 			this.cssClass = ko.observable(data.cssClass || 'title-button');
 			this.onClick = data.onClick;
+			this.title = data.title || '';
 			this.isFirst = ko.observable(data.isFirst);
 			this.isLast = ko.observable(data.isLast);
 				
@@ -24,6 +25,10 @@
 						this.parentViewModel.close();
 					}
 					else if (typeof this.onClick == 'function') {
+						this.onClick.call(this.parentViewModel, this);
+					} else {
+						// last ditch try and eval
+						this.onClick = eval(data.onClick);
 						this.onClick.call(this.parentViewModel, this);
 					}					
 				}
@@ -37,7 +42,8 @@
 			this.width = ko.observable(data.width || 500);
 			this.height = ko.observable(data.height || 500);
 			
-			this.create = data.create;
+			this.contents = data.contents;
+			this.create = typeof data.create == 'function' ? data.create : eval(data.create);
 			this.taskbarClass = data.taskbarClass;
 			this.buttons = ko.observableArray([]);
 			
@@ -111,10 +117,10 @@
 					</div>");
 					
 	templateEngine.addTemplate("koWindowButtonTemplate", "\
-                    <div class=\"${cssClass}\" data-bind=\"click : clicked, css : { right : isFirst(), left : isLast() }, hover : 'title-button-hover'\"><div class=\"title-button-inner\"><div class=\"icon ${ iconClass }\"></div></div></div>");				
+                    <div class=\"${cssClass}\" data-bind=\"click : clicked, attr: { title: title }, css : { right : isFirst(), left : isLast() }, hover : 'title-button-hover'\"><div class=\"title-button-inner\"><div class=\"icon ${ iconClass }\"></div></div></div>");				
 			
 	templateEngine.addTemplate("koTaskbarItemTemplate", "\
-                    <div class=\"taskbar-item\" data-bind=\"click: minimize, hover: 'taskbar-item-hover', epTaskbarVisible : isMinimized()\" title=\"${ name }\">\
+                    <div class=\"taskbar-item\" data-bind=\"click: minimize, hover: 'taskbar-item-hover', koTaskbarVisible : isMinimized()\" title=\"${ name }\">\
 						<div class=\"inner-taskbar-item\">\
 							<div class=\"taskbar-icon ${ taskbarClass }\">\
 							</div>\
@@ -186,7 +192,7 @@
 			}
     };
 	
-	ko.bindingHandlers.epTaskbarVisible = {
+	ko.bindingHandlers.koTaskbarVisible = {
 		'init': function (element, valueAccessor) {
 			var $element = $(element),
 				value = ko.utils.unwrapObservable(valueAccessor()),
