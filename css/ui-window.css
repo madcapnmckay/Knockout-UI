@@ -8,7 +8,7 @@ Window
 	position: absolute; top: 0; left: 0; opacity: 0.8; filter:alpha(opacity=80);   }
 .ui-window .outer-content  { border: 1px solid #E1EFFD; position: relative; }
 .ui-window .inner-content  { border: 1px solid #5F6F7D; background-color: White; }
-.ui-window .title-bar { overflow: hidden; padding: 0 5px 10px; position: relative; top: -1px; }
+.ui-window .title-bar { overflow: hidden; padding: 0 5px 10px; position: relative; top: -1px; min-height: 21px; }
 .ui-window .title-button { float: right; border: 1px solid #505A64; border-top-width: 0px; border-right-width: 0px; cursor: pointer; }
 .ui-window .title-button-inner { border: 1px solid #DCE7F5; background-color: #ADBFD7; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#E3EDF7), to(#ADBFD7)); background-image: -moz-linear-gradient(top,  #E3EDF7,  #ADBFD7); padding: 1px 2px;}
 .ui-window .title-button.right, .ui-window .title-button.right .title-button-inner { border-right-width: 1px; -moz-border-radius:0 0 2px 0; -webkit-border-radius: 0 0 2px 0; border-radius: 0 0 2px 0; }
