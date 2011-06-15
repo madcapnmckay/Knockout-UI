@@ -16,11 +16,12 @@ Included :
 * Dropdown
 * Context Menu
 * Window Manager
+* Tabs
 
 In the pipeline :
 -----------------
 
-* Tabs
+* All components accept overrides for templates.
 * Skinned Radio/Checkbox
 * Grid
 * Flickr Gallery
