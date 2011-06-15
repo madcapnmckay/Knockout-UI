@@ -16,9 +16,8 @@
 	<script type="text/javascript" src="../lib/jquery.ui.draggable.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.ui.droppable.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
-	<script type="text/javascript" src="../lib/knockout-1.2.0.min.js"></script>
+	<script type="text/javascript" src="../lib/knockout-1.2.1.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.cookie.js"></script>
-	<script type="text/javascript" src="../lib/knockout.mapping-latest.js"></script>
 	
 	<script type="text/javascript" src="js/shCore.js"></script>
 	<script type="text/javascript" src="js/shBrushXml.js"></script>
@@ -38,7 +37,7 @@
 		<p>The tree also integrates with the <a href="context-menu.html">context menu binding</a> to allow each node to display a custom context menu.</p>
 		<p>A set of global behavior configuration controls each nodes behavior and can be overridden by supplying a viewModel.defaults configuration object. 
 		Multiple node types are allowed and each node type can have it's own behavior configured using the viewModel.defaults.typename options.</p>
-		<p>If the <a href="https://github.com/carhartl/jquery-cookie">jquery cookie plugin</a> is include the tree will remember which nodes were expanded/closed when the page was last loaded.</p> 
+		<p>If the <a href="https://github.com/carhartl/jquery-cookie">jquery cookie plugin</a> is included the tree will remember which nodes were expanded/closed when the page was last loaded.</p> 
 		<p><strong>Note: </strong>This feature will not work in chrome from a local file version of this example due to a restriction on writing local cookies.</p>
 		<h2>Usage (with context menu)</h2>
 		<h3>Markup</h3>
@@ -88,10 +87,10 @@
 					],
 					dragHolder : ko.observable(undefined),
 					handlers: { 
-						addNode : function (parent, node) { 
+						addNode : function (parent, type, name, onSuccess) { 
 							nextId = nextId + 1; 
-							return nextId;
-						}	
+							onSuccess(nextId);
+						}		
 					},
 					logTo : '#log1',
 					defaults : {
@@ -224,10 +223,10 @@
 					],
 					dragHolder : ko.observable(undefined),
 					handlers: { 
-						addNode : function (parent, node) { 
+						addNode : function (parent, type, name, onSuccess) { 
 							nextId = nextId + 1; 
-							return nextId;
-						}	
+							onSuccess(nextId);
+						}		
 					},
 					logTo : '#log2',
 					defaults : {
@@ -296,9 +295,21 @@
 								<li>canAddChildren : true</li>
 								<li>childType : 'folder'</li>
 								<li>renameAfterAdd : true</li>
-								<li>connectToSortable : false</li></ul></td>
+								<li>connectToSortable : false</li>
+								<li>dragCursorAt : { left: 28, bottom: 0 }</li>
+								<li>dragCursor : 'auto'</li>
+								<li>dragHelper :<br/> 
+												<div style="width:400px;">
+												<script type="syntaxhighlighter" class="brush: js"><![CDATA[
+													function (event, element) { 
+														return $('<div></div>').addClass("drag-icon").append($('<span></span>').addClass(this.cssClass())); 
+													}
+												</script>
+												</div>
+								</li>
+								</ul></td>
 					</tr>
-					<tr><td>children</td><td>The array of root nodes. There is no explicit root node instead the parent viewmodel if considered the root.</td><td></td></tr>
+					<tr><td>children</td><td>The array of root nodes. There is no explicit root node instead the parent viewmodel is considered the root.</td><td></td></tr>
 					<tr><td>logTo</td><td>The jquery selector of the log div to use to display status info.</td><td>#log</td></tr>
 					<tr><td>remember</td><td>Whether the state of the tree is saved in a cookie</td><td>false</td></tr>
 					<tr><td>dragHolder</td><td>A global observable needed to contain the node currently being dragged. 
@@ -307,34 +318,41 @@
 						<td>handlers</td>
 						<td>
 							<p>An extendable object containing handlers that are called for each tree operation</p>
-							<p>The handlers you can override are 'addNode', 'renameNode', 'deleteNode', 'moveNode', 'startDrag' & 'endDrag'</p>
-							<p>The handlers are your opportunity to verify that the operation is valid. In the case of add, rename, delete and move operations, returning false will cancel the operation.</p>
-							<p>When 'addNode' is called the new id for the created node must be returned</p>
+							<p>The handlers you can override are 'selectNode', 'addNode', 'renameNode', 'deleteNode', 'moveNode', 'startDrag' & 'endDrag'</p>
+							<p>The handlers are your opportunity to verify that the operation is valid. In the case of select, add, rename, delete and move operations, the calling of onSuccess confirms the operation (perhaps after receiving the result from an ajax operation).</p>
+							<p>When 'addNode' is called the new id for the created node must be returned to the onSuccess callback.</p>
 						</td>
 						<td>
 							<div style="width:400px;">
 							<script type="syntaxhighlighter" class="brush: js"><![CDATA[
-								addNode : function (parent) { 
-									logger('add new node ', this.logTo); 
-									return 10; 
+								selectNode : function(node, onSuccess) {
+									logger('select node ' + node.name(), configuration.logTo); 
+									onSuccess();
 								},
-								renameNode : function (node, from, to) { 
-									logger('rename node "' + from + '" to "' + to + '"'); 
-									return true; 
+								addNode : function (parent, type, name, onSuccess) { 
+									logger('add new node ', configuration.logTo); 
+									onSuccess(10); 
 								},
-								deleteNode : function (node) { 
-									logger('delete node "' + node.name() + '"', this.logTo); 
-									return true; 
+								renameNode : function (node, from, to, onSuccess) { 
+									logger('rename node "' + from + '" to "' + to + '"', configuration.logTo); 
+									onSuccess(); 
 								},
-								moveNode :  function (node, newParent) { 
-									logger('move node "' + node.name() + '" to "' + newParent.name() + '"', this.logTo); 
-									return true; 
+								deleteNode : function (node, onSuccess) { 
+									logger('delete node "' + node.name() + '"', configuration.logTo); 
+									onSuccess(); 
+								},
+								moveNode :  function (node, newParent, onSuccess) { 
+									logger('move node "' + node.name() + '" to "' + newParent.name() + '"', configuration.logTo); 
+									onSuccess(); 
+								},
+								doubleClick : function(node) {
+									logger('doubled clicked ' + node.name(), configuration.logTo); 
 								},
 								startDrag : function (node) { 
-									logger('start drag', this.logTo); 
+									logger('start drag', configuration.logTo); 
 								},
 								endDrag : function (node) { 
-									logger('stop drag', this.logTo); 
+									logger('stop drag', configuration.logTo); 
 								}
 							]]></script>
 							</div>
@@ -406,10 +424,10 @@
 				],
 				dragHolder : ko.observable(undefined),
 				handlers: { 
-					addNode : function (parent, node) { 
+					addNode : function (parent, type, name, onSuccess) { 
 						nextId = nextId + 1; 
-						return nextId;
-					}	
+						onSuccess(nextId);
+					}		
 				},
 				logTo : '#log1',
 				defaults : {
@@ -487,10 +505,10 @@
 				],
 				dragHolder : ko.observable(undefined),
 				handlers: { 
-					addNode : function (parent, node) { 
+					addNode : function (parent, type, name, onSuccess) { 
 						nextId = nextId + 1; 
-						return nextId;
-					}	
+						onSuccess(nextId);
+					}		
 				},
 				logTo : '#log2',
 				defaults : {
