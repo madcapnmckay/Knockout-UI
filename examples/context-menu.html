@@ -11,7 +11,7 @@
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.ui.position.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
-	<script type="text/javascript" src="../lib/knockout-1.2.0.min.js"></script>
+	<script type="text/javascript" src="../lib/knockout-1.2.1.min.js"></script>
 	<script type="text/javascript" src="../lib/knockout.mapping-latest.js"></script>
 	
 	<script type="text/javascript" src="js/shCore.js"></script>
@@ -53,13 +53,13 @@
 						items : [ 
 							{ text : 'Open',  run : function() { alert('open'); } },  
 							{ text : 'Cut',   run : function() { alert('cut'); } }, 
-							{ text : 'Copy',  run : function() { alert('copy'); }, iconClass: 'copy' }, 
+							{ text : 'Copy',  run : function() { alert('copy'); }, iconCssClass: 'copy' }, 
 							{ text : 'Paste', run : function() { alert('paste'); }}, 
 							{ separator : true },
 							{ text : 'New', 
 								items : [
-									{ text : 'Page', run : function() { alert('new page'); }, iconClass: 'page' },
-									{ text : 'Folder', run : function() { alert('new folder'); }, iconClass: 'folder' },
+									{ text : 'Page', run : function() { alert('new page'); }, iconCssClass: 'page' },
+									{ text : 'Folder', run : function() { alert('new folder'); }, iconCssClass: 'folder' },
 								] }	
 					] }
 				]
@@ -77,6 +77,54 @@
 			<br />
 			<p>Right click the two images to see the context menu</p>
 			<p>Notice how the same menu has different items disabled. Also notice the positioning flip behavior on the far right image.</p>
+		</div>
+		<h3>Options</h3>
+		<div class="options">
+			<h4>Context Menu Set</h4>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+						<th>Default</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr><td>contextMenus</td><td>An array of Context Menu Definitions that makes up the available set for this bind</td><td></td></tr>
+					<tr><td>build</td><td>A function that decides which menu item in the set to display and which items to disable. This function must return an object of the form { name: 'NAME', disable: ['ITEMNAME'] }. This can be a function definition or the string name of the function. The context menu binding will try to evaluate the string if a function type is not detected (useful when the configuration is passed via json).</td><td></td></tr>
+				</tbody> 
+			</table>
+			<h4>Context Menu Definition</h4>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+						<th>Default</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr><td>name</td><td>The name of the menu. This is used to identify which menu to display</td><td></td></tr>
+					<tr><td>width</td><td>The width of the menu item.</td><td>190</td></tr>
+					<tr><td>items</td><td>An array of content menu items that make up the menu. These can be functional items or separators (see example).</td><td></td></tr>
+				</tbody> 
+			</table>
+			<h4>Context Menu Item</h4>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+						<th>Default</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr><td>text</td><td>The text displayed in the menu item.</td><td></td></tr>
+					<tr><td>run</td><td>The function to be run when the menu item is clicked. his can be a function definition or the string name of the function. The context menu will try to evaluate the string if a function type is not detected (useful when the configuration is passed via json).</td><td></td></tr>
+					<tr><td>iconCssClass</td><td>The css class applied to the left hand span. Allows you to add icons if you wish.</td><td></td></tr>
+					<tr><td>items</td><td>An array of sub menu items that will appear as a popout on hover.</td><td></td></tr>
+				</tbody> 
+			</table>
 		</div>
 		<h3>Dependencies</h3>
 		<ul class="dependencies">
@@ -110,19 +158,19 @@
 					items : [ 
 						{ text : 'Open',  run : function() { alert('open'); } },  
 						{ text : 'Cut',   run : function() { alert('cut'); } }, 
-						{ text : 'Copy',  run : function() { alert('copy'); }, iconClass: 'copy' }, 
+						{ text : 'Copy',  run : function() { alert('copy'); }, iconCssClass: 'copy' }, 
 						{ text : 'Paste', run : function() { alert('paste'); }}, 
 						{ separator : true },
 						{ text : 'New', 
 							items : [
-								{ text : 'Page', run : function() { alert('new page'); }, iconClass: 'page' },
-								{ text : 'Folder', run : function() { alert('new folder'); }, iconClass: 'folder' },
+								{ text : 'Page', run : function() { alert('new page'); }, iconCssClass: 'page' },
+								{ text : 'Folder', run : function() { alert('new folder'); }, iconCssClass: 'folder' },
 							] }	
 				] }
 			]
 		};
 		myModel.pictureContext = new ko.contextMenu.viewModel({ contextMenus : myModel.contextMenus, build : myModel.buildPicture1Context });
-		myModel.pictureContext2 = new ko.contextMenu.viewModel({ contextMenus : myModel.contextMenus, build : myModel.buildPicture2Context });
+		myModel.pictureContext2 = new ko.contextMenu.viewModel({ contextMenus : myModel.contextMenus, build : "myModel.buildPicture2Context" });
 		
 		$(function () {
 			SyntaxHighlighter.all();
