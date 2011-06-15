@@ -14,7 +14,7 @@
 	<script type="text/javascript" src="../lib/jquery.ui.mouse.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.ui.draggable.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
-	<script type="text/javascript" src="../lib/knockout-1.2.0.min.js"></script>
+	<script type="text/javascript" src="../lib/knockout-1.2.1.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.cookie.js"></script>
 	
 	<script type="text/javascript" src="js/shCore.js"></script>
@@ -25,7 +25,7 @@
 	<script type="text/javascript" src="../js/ui-util.js"></script>	
 	<script type="text/javascript" src="../js/ui-window.js"></script>	
 </head>
-<body data-bind="koWindowManager: windowViewModel">
+<body data-bind="windowManager: windowViewModel">
 	<div class="central-column">
 		<h1>Window Manager Binding</h1>
 		<p>The window manager binding allows you to specify a number of window objects in a viewModel and for them to render as draggable, minimizable windows in the browser.</p>
@@ -42,7 +42,7 @@
 		<h2>Usage</h2>
 		<h3>Markup</h3>
 		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
-			<body data-bind="koWindowManager: windowViewModel">
+			<body data-bind="windowManager: windowViewModel">
 		]]></script>
 		<h3>Javascript</h3>
 		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
@@ -50,31 +50,39 @@
 				$(element).append('<div>Window Body Here</div>');
 			}
 			
-			var clickHandler = function() {
-				alert('clicked');
-			}
+			var pinHandler = function(button) { 
+				// toggle pinned status
+				this.isPinned(!this.isPinned());
+				// change button icon
+				var newCssClass = this.isPinned() ? 'unpin' : 'pin';
+				// change the button title
+				var newTitle = this.isPinned() ? 'click unpin me' : 'click pin me to the surface';
+				button.iconCssClass(newCssClass);
+				button.title(newTitle);
+			} 
 		
 			var nextId = 3, myModel = function() {
-				this.windowViewModel = new ko.koWindowManager.viewModel({ 
+				this.windowViewModel = new ko.windowManager.viewModel({ 
 					windows: [
 						{ 
 							id : "1",
 							name: "Main Window", 
 							create : createWindowBody, 
-							taskbarClass: 'tb-eyepatch', 
+							taskbarCssClass: 'tb-eyepatch', 
 							isMinimized : true,
-							buttons : [ { iconClass : 'pin', onClick: function() { alert('test'); } }, 
-										{ iconClass : 'minimize', onClick: 'minimize' } 
+							buttons : [ { iconCssClass : 'pin', onClick: pinHandler }, 
+										{ iconCssClass : 'minimize', onClick: 'minimize' } 
 							] 
 						},
 						{ 
 							id : "2",
 							name: "Some other window", 
 							create : createWindowBody, 
-							taskbarClass: 'tb-folder', 
+							taskbarCssClass: 'tb-folder', 
+							isPinned : true,
 							position : '1000,380', 
-							buttons : [ { iconClass : 'pin', onClick: clickHandler, title : 'pin me to the surface' }, 
-										{ iconClass : 'minimize', onClick: 'minimize', title : 'click here to minimize' } 
+							buttons : [ { iconCssClass : 'unpin', onClick: pinHandler, title : 'pin me to the surface' }, 
+										{ iconCssClass : 'minimize', onClick: 'minimize', title : 'click here to minimize' }
 							] 
 						}
 					] 
@@ -85,9 +93,9 @@
 							id : nextId,
 							name: "Main Window", 
 							create : createWindowBody, 
-							taskbarClass: 'tb-eyepatch',
-							buttons : [ { iconClass : 'close', onClick: 'close', cssClass: 'title-button red'}, 
-										{ iconClass : 'minimize', onClick: 'minimize' } 
+							taskbarCssClass: 'tb-eyepatch',
+							buttons : [ { iconCssClass : 'close', onClick: 'close', cssClass: 'title-button red'}, 
+										{ iconCssClass : 'minimize', onClick: 'minimize' } 
 							] 
 						});
 					nextId++;
@@ -109,7 +117,7 @@
 				</thead>
 				<tbody>
 					<tr><td>cssClass</td><td>The default css class applied to all windows</td><td>'ui-window'</td></tr>
-					<tr><td>taskbarClass</td><td>The default css class applied to all taskbar icons</td><td>'ui-taskbar'</td></tr>
+					<tr><td>taskbarCssClass</td><td>The default css class applied to all taskbar icons</td><td>'ui-taskbar'</td></tr>
 					<tr><td>windows</td><td>The array of window objects</td><td></td></tr>
 				</tbody>
 			</table>
@@ -137,11 +145,12 @@
 					<tr><td>width</td><td>The width in pixels</td><td>500</td></tr>
 					<tr><td>height</td><td>The height in pixels</td><td>500</td></tr>
 					<tr><td>cssClass</td><td>The css class applied to the window outer div</td><td>the same as the parent viewModel</td></tr>
-					<tr><td>taskbarClass</td><td>The css class applied to the window's icon on the taskbar</td><td></td></tr>
-					<tr><td>create (function)</td><td>Called to create the window body</td><td></td></tr>
+					<tr><td>taskbarCssClass</td><td>The css class applied to the window's icon on the taskbar</td><td></td></tr>
+					<tr><td>create (function)</td><td>Called to create the window body. This can be a function definition or the string name of the function. The window will try to evaluate the string if a function type is not detected (useful when the configuration is passed via json).</td><td></td></tr>
 					<tr><td>buttons (array)</td><td>An array of button objects which specify the buttons on the window top bar</td><td></td></tr>
 					<tr><td>position</td><td>The initial position of the window specified as a pair of X,Y coordinates e.g. '1000,380'</td><td></td></tr>
 					<tr><td>isMinimized</td><td>Whether the window is minimized on first load</td><td>false</td></tr>
+					<tr><td>isPinned</td><td>Whether the window is pinned to the surface (fixed position) or scrolls with the page</td><td>false</td></tr>
 				</tbody>
 			</table>
 			<h4>Button Objects</h4>
@@ -154,9 +163,10 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr><td>iconClass</td><td>The ccs class applied to icon of the button</td><td></td></tr>
+					<tr><td>iconCssClass</td><td>The ccs class applied to icon of the button</td><td></td></tr>
 					<tr><td>cssClass</td><td>The ccs class applied to the button itself</td><td></td></tr>
-					<tr><td>onClick</td><td>The handler called when the button is clicked</td><td>500</td></tr>
+					<tr><td>onClick</td><td>The handler called when the button is clicked. There are two defined actions 'close' & 'minimize' which can be assigned as strings. This can also be a custom function definition or the string name of the function. The button will try to evaluate the string if a function type is not detected (useful when the configuration is passed via json). </td><td></td></tr>
+					<tr><td>title</td><td>The tooltip title applied to the button</td><td></td></tr>
 				</tbody>
 			</table>
 			
@@ -199,31 +209,39 @@
 			$(element).append('<div>Window Body Here</div>');
 		}
 		
-		var clickHandler = function() {
-			alert('clicked');
-		}
+		var pinHandler = function(button) { 
+			// toggle pinned status
+			this.isPinned(!this.isPinned());
+			// change button icon
+			var newCssClass = this.isPinned() ? 'unpin' : 'pin';
+			// change the button title
+			var newTitle = this.isPinned() ? 'click unpin me' : 'click pin me to the surface';
+			button.iconCssClass(newCssClass);
+			button.title(newTitle);
+		} 
 	
 		var nextId = 3, myModel = function() {
-			this.windowViewModel = new ko.koWindowManager.viewModel({ 
+			this.windowViewModel = new ko.windowManager.viewModel({ 
 				windows: [
 					{ 
 						id : "1",
 						name: "Main Window", 
 						create : createWindowBody, 
-						taskbarClass: 'tb-eyepatch', 
+						taskbarCssClass: 'tb-eyepatch', 
 						isMinimized : true,
-						buttons : [ { iconClass : 'pin', onClick: function() { alert('test'); } }, 
-									{ iconClass : 'minimize', onClick: 'minimize' } 
+						buttons : [ { iconCssClass : 'pin', onClick: pinHandler }, 
+									{ iconCssClass : 'minimize', onClick: 'minimize' } 
 						] 
 					},
 					{ 
 						id : "2",
 						name: "Some other window", 
 						create : createWindowBody, 
-						taskbarClass: 'tb-folder', 
+						taskbarCssClass: 'tb-folder', 
+						isPinned : true,
 						position : '1000,380', 
-						buttons : [ { iconClass : 'pin', onClick: clickHandler, title : 'pin me to the surface' }, 
-								    { iconClass : 'minimize', onClick: 'minimize', title : 'click here to minimize' }
+						buttons : [ { iconCssClass : 'unpin', onClick: pinHandler, title : 'pin me to the surface' }, 
+								    { iconCssClass : 'minimize', onClick: 'minimize', title : 'click here to minimize' }
 						] 
 					}
 				] 
@@ -234,9 +252,9 @@
 						id : nextId,
 						name: "Main Window", 
 						create : createWindowBody, 
-						taskbarClass: 'tb-eyepatch',
-						buttons : [ { iconClass : 'close', onClick: 'close', cssClass: 'title-button red'}, 
-									{ iconClass : 'minimize', onClick: 'minimize' } 
+						taskbarCssClass: 'tb-eyepatch',
+						buttons : [ { iconCssClass : 'close', onClick: 'close', cssClass: 'title-button red'}, 
+									{ iconCssClass : 'minimize', onClick: 'minimize' } 
 						] 
 					});
 				nextId++;

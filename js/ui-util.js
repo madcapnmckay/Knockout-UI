@@ -1,5 +1,18 @@
 /*global window, $, ko */
 (function () {
+	ko.addTemplateSafe = function (id, template, engine) {
+		engine.addTemplate(id, template);
+
+        // when the script is loaded dynamically the template is not created
+        // this hack makes sure its appended to the dom
+        if (!(id in jQuery['template'])) {
+            if ($('#' + id).length === 0) {
+                // create the template
+                $("body").append("<script id=\"" + id + "\" type=\"text/html\">" + template + "<\/script>");
+            }
+        }
+	};
+
     ko.bindingHandlers.hover = {
         'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {
             var $element = $(element),
