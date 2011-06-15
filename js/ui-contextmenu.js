@@ -1,4 +1,14 @@
 /*global document, window, $, ko, debug, setTimeout, alert */
+/*
+ * Knockout UI Content Menu
+ * 
+ * Copyright (c) 2011 Ian Mckay
+ *
+ * https://github.com/madcapnmckay/Knockout-UI
+ *
+ * License: MIT http://www.opensource.org/licenses/mit-license.php
+ *
+ */
 (function () {
     // Private function
     var logger = function (log) {
@@ -10,30 +20,30 @@
 		templateEngine = new ko.jqueryTmplTemplateEngine(),
 		Menu = function (data, viewModel) {
 			this.viewModel = viewModel;
+			this.cssClass = ko.observable(data.cssClass || viewModel.cssClass());
 			this.width = ko.observable(data.width || 190);
+			this.name = ko.observable(data.name);
 			var self = this;
-			var itemMapping =  {
-				items : {
-					create: function (options) {
-						return new MenuItem(options.data, self);
-					}
-				}
-			};			
-			ko.mapping.fromJS(data, itemMapping, this);
+			this.items = ko.observableArray([]);
+			for(var i in data.items)
+			{
+				var item = data.items[i];
+				this.items.push(new MenuItem(item, self));
+			}
 		},
 		MenuItem = function (data, container) {
 			this.dataItem = {};
 			this.container = container;
 			this.text = ko.observable(data.text || '');
-			this.iconClass = ko.observable(data.iconClass);
+			this.iconCssClass = ko.observable(data.iconCssClass || '');
 			this.separator = ko.observable(data.separator || false);
-			this.run = data.run;
+			this.run = typeof data.run === 'function' ? data.run : eval(data.run);
 			this.items = ko.observableArray(data.items || []);
 			this.width = ko.observable(container.width());
 			this.disabled = ko.observable(false);
 			
 			if (data.items !== undefined && data.items.length > 0) {
-				this.subMenu = new Menu({ items : data.items }, this);
+				this.subMenu = new Menu({ items : data.items }, container);
 			}
 					
 			this.hasChildren = function () {
@@ -70,41 +80,39 @@
     ko.contextMenu = {
         viewModel: function (configuration) {
 			this.cssClass = ko.observable(configuration.cssClass || 'ui-context');
-			this.build = configuration.build;
+			this.build = typeof configuration.build === 'function' ? configuration.build : eval(configuration.build);
 			
 			var self = this;
-			var menuMapping =  {
-				contextMenus : {
-					create: function (options) {
-						return new Menu(options.data, self);
-					}
-				}
-			};
-			
-			ko.mapping.fromJS(configuration, menuMapping, this);
+			this.contextMenus = ko.observableArray([]);
+			for(var i in configuration.contextMenus)
+			{
+				var menu = configuration.contextMenus[i];
+				this.contextMenus.push(new Menu(menu, self));
+			}
         }
     };
 	
-	templateEngine.addTemplate("contextItemTemplate", "\
+	ko.addTemplateSafe("contextItemTemplate", "\
 					<li data-bind=\"subContext: hasChildren(), click : onClick, bubble : false, css : { separator : separator, disabled : disabled }, style : { width : itemWidth() }\">\
-						<span class=\"inner\"><span class=\"icon ${iconClass}\"></span><label data-bind=\"css : { parent : hasChildren() }, style : { width : labelWidth() }\">\
+						<span class=\"inner\"><span class=\"icon ${iconCssClass}\"></span><label data-bind=\"css : { parent : hasChildren() }, style : { width : labelWidth() }\">\
 							${ text }</label></span>\
 						{{if hasChildren() }}\
-							<div class=\"ui-context nocontext\" style=\"position:absolute;\" >\
+							<div class=\"${ container.cssClass() } nocontext\" style=\"position:absolute;\" >\
 								<ul data-bind='template: { name: \"contextItemTemplate\", foreach: subMenu.items }'></ul>\
 							</div>\
 						{{/if}}\
-					</li>");
+					</li>", templateEngine);
 	
-	templateEngine.addTemplate("contextMenuTemplate", "\
-					<div class=\"ui-context nocontext\" style=\"position:absolute;\" data-bind=\"position: { width: menu.width(), of : mousePosition }, style : { zIndex : zIndex }\">\
+	ko.addTemplateSafe("contextMenuTemplate", "\
+					<div class=\"${ menu.cssClass() } ui-context nocontext\" style=\"position:absolute;\" data-bind=\"position: { width: menu.width(), of : mousePosition }, style : { zIndex : zIndex }\">\
 						<ul data-bind='template: { name: \"contextItemTemplate\", foreach: menu.items }'></ul>\
-					</div>");
+					</div>", templateEngine);
 
 	ko.bindingHandlers.contextMenu = {
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {
 			var $element = $(element), menuContainer, item, config, menu,
-				value = ko.utils.unwrapObservable(valueAccessor());
+				value = ko.utils.unwrapObservable(valueAccessor()),
+				builder = value.build;
 				
 			$element
 				.addClass('nocontext')
@@ -129,8 +137,9 @@
 								}
 							}
 							// assign the data item
-							for (var j = 0; i < config.menu.items().length; j += 1) {
-								config.menu.items()[j].addDataItem(viewModel);
+							for (var j in config.menu.items()) {
+								var menuItem = config.menu.items()[j];
+								menuItem.addDataItem(viewModel);
 							}
 							
 							// calculate z-index
@@ -156,7 +165,7 @@
 					return false; 
 				});
 			
-			$('body').click(function () {
+			$('html').click(function () {
 				$('.ui-context').remove();
 			});
 		}
@@ -166,13 +175,15 @@
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {
 			var $element = $(element),
 				value = ko.utils.unwrapObservable(valueAccessor()),
-				width = ko.utils.unwrapObservable(viewModel.width());
+				width = ko.utils.unwrapObservable(viewModel.width()),
+                cssClass;
 			
 			if (value) {
-				$('.ui-context', $element).hide();
+				cssClass = '.' + viewModel.container.cssClass()
+				$(cssClass, $element).hide();
 				$element.hover(function () {
 					var $parent = $(this);
-					$('.ui-context', $parent).first().toggle()
+					$(cssClass, $parent).first().toggle()
 						.position({ my : 'left top', at : 'right top', of : $parent, collision : 'flip' });
 						
 				});
