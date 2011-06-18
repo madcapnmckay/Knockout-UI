@@ -53,11 +53,12 @@
 			// assign the childrens parent
 			var self = this, vm = this.viewModel, openSelfAndParents;
 			this.children = ko.observableArray([]);
-			for(var i in data.children)
-			{
-				var child = data.children[i];
-				this.children.push(new Node(child, self, vm));
-			}
+			for (var i = 0; i < data.children.length; i += 1) {
+		        var child = data.children[i];
+		        if (child !== undefined) {
+		            this.children.push(new Node(child, self, vm));
+		        }
+		    }
 
 			this.unqiueIdentifier = function() {
 				return this.viewModel.id() + this.type() + this.id();
