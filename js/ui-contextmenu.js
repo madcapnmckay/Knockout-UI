@@ -137,7 +137,7 @@
 								}
 							}
 							// assign the data item
-							for (var j in config.menu.items()) {
+							for (var j = 0; j < config.menu.items().length; j += 1) {
 								var menuItem = config.menu.items()[j];
 								menuItem.addDataItem(viewModel);
 							}
