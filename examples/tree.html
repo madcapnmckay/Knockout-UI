@@ -325,19 +325,20 @@
 						<td>
 							<div style="width:400px;">
 							<script type="syntaxhighlighter" class="brush: js"><![CDATA[
-								selectNode : function(node, onSuccess) {
+								selectNode : function (node, onSuccess) {
 									logger('select node ' + node.name(), configuration.logTo); 
 									onSuccess();
 								},
 								addNode : function (parent, type, name, onSuccess) { 
 									logger('add new node ', configuration.logTo); 
-									onSuccess(10); 
+									// create node data to pass back
+									onSuccess({ id: 10, parent: parent, name: name }); 
 								},
 								renameNode : function (node, from, to, onSuccess) { 
 									logger('rename node "' + from + '" to "' + to + '"', configuration.logTo); 
 									onSuccess(); 
 								},
-								deleteNode : function (node, onSuccess) { 
+								deleteNode : function (node, action, onSuccess) { 
 									logger('delete node "' + node.name() + '"', configuration.logTo); 
 									onSuccess(); 
 								},
@@ -345,7 +346,7 @@
 									logger('move node "' + node.name() + '" to "' + newParent.name() + '"', configuration.logTo); 
 									onSuccess(); 
 								},
-								doubleClick : function(node) {
+								doubleClick : function (node) {
 									logger('doubled clicked ' + node.name(), configuration.logTo); 
 								},
 								startDrag : function (node) { 
@@ -426,7 +427,7 @@
 				handlers: { 
 					addNode : function (parent, type, name, onSuccess) { 
 						nextId = nextId + 1; 
-						onSuccess(nextId);
+						onSuccess({ id: nextId, parent: parent, name: name }); 
 					}		
 				},
 				logTo : '#log1',

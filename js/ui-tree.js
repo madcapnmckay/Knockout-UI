@@ -12,8 +12,7 @@
 (function () {
     // Private function
     var logger = function (log, logTo) {
-			if (typeof debug !== 'undefined')
-			{	
+			if (typeof debug !== 'undefined') {	
 				$('<div></div>').appendTo(logTo || '#log').text(new Date().toGMTString() + ' : ui-tree.js - '  + log);
 			}
 		},
@@ -36,7 +35,7 @@
 			this.cssClass = ko.observable(data.cssClass || 'folder');
 			this.isRenaming = ko.observable(false);
 			
-			this.type = ko.observable(data.type || data.cssClass);	
+			this.type = ko.observable(data.type || this.cssClass());	
 			// a placeholder for additional custom data
 			this.contents = data.contents;
 			
@@ -51,16 +50,17 @@
 			}, this);
 			
 			// assign the childrens parent
-			var self = this, vm = this.viewModel, openSelfAndParents;
+			var self = this, vm = this.viewModel, openSelfAndParents, i;
 			this.children = ko.observableArray([]);
-			for (var i = 0; i < data.children.length; i += 1) {
-		        var child = data.children[i];
-		        if (child !== undefined) {
-		            this.children.push(new Node(child, self, vm));
-		        }
-		    }
+			if (data.children !== undefined) {
+				for (i = 0; i < data.children.length; i += 1) {
+					if (data.children[i] !== undefined) {
+						this.children.push(new Node(data.children[i], self, vm));
+					}
+				}
+			}
 
-			this.unqiueIdentifier = function() {
+			this.unqiueIdentifier = function () {
 				return this.viewModel.id() + this.type() + this.id();
 			};
 			
@@ -69,12 +69,11 @@
 			var savedOpen = $.cookie(this.unqiueIdentifier() + 'open');
 			if (savedOpen !== null) {
 				this.isOpen(savedOpen === 'true');
-			} 
-			else if (data.isOpen !== undefined) {
+			} else if (data.isOpen !== undefined) {
 				this.isOpen(data.isOpen);
 			}
 			
-			this.saveState = function() {
+			this.saveState = function () {
 				if ($.cookie === undefined && this.viewModel.remember()) {
 					alert('You must include $.cookie in order to use this feature');
 				} else if (this.viewModel.remember()) {	
@@ -86,19 +85,22 @@
 			};
 			
 			this.selectNode = function () {
-				if (viewModel.selectedNode() !== undefined && viewModel.selectedNode().isRenaming()) {
+				var selected = this.viewModel.selectedNode(), that = this;
+				
+				if (selected !== undefined && selected.isRenaming()) {
 					$('.rename > .node input', viewModel.tree).blur();
 				}
 				this.saveState();
-				var that = this;
-				if (viewModel.selectedNode() !== this) {
-					viewModel.handlers.selectNode(this, function() {
-						if (viewModel.selectedNode() !== undefined) {
-							viewModel.selectedNode().isSelected(false);
-							viewModel.selectedNode().isRenaming(false);
+							
+				if (selected === undefined || (selected !== undefined && selected !== this)) {
+				
+					that.viewModel.handlers.selectNode(this, function () {
+						if (selected !== undefined) {
+							selected.isSelected(false);
+							selected.isRenaming(false);
 						}
 						that.isSelected(true);
-						viewModel.selectedNode(that);
+						that.viewModel.selectedNode(that);
 						that.saveState();
 					});
 				}
@@ -172,19 +174,19 @@
 						type = options.type !== undefined ? options.type : defaultType,
 						defaultName = typeValueOrDefault('name', type, this.viewModel),
 						name = options.name !== undefined ? options.name : defaultName,
-						rename = typeValueOrDefault('renameAfterAdd', type, this.viewModel);
+						rename = options.rename !== undefined ? options.rename : typeValueOrDefault('renameAfterAdd', type, this.viewModel);
 				
 					// the addNode handler must return an id for the new node
 					var that = this;
-					viewModel.handlers.addNode(this, type, name, function(id) {
-						if (id !== undefined) {
-							var newNode = new Node({ id : id, name : name, children: [], cssClass: type}, self, that.viewModel);
+					viewModel.handlers.addNode(this, type, name, function (data) {
+						if (data !== undefined) {
+							var newNode = new Node(data, self, that.viewModel);
 							that.children.push(newNode);				
 							openSelfAndParents(that);
 							that.isSelected(false);
 							newNode.selectNode();
 							if (rename) {
-								newNode.isRenaming(that);
+								newNode.isRenaming(true);
 							}
 							
 							viewModel.recalculateSizes();
@@ -194,11 +196,20 @@
 				}
 			}.bind(this);
 			
-			this.deleteSelf = function () {
+			this.setViewModel = function (viewModel) {
+				var i;
+				for (i = 0; i < this.children().length; i += 1) {
+					var child = this.children()[i].setViewModel(viewModel);
+				}
+				this.viewModel = viewModel;
+				this.contextMenu = viewModel.contextMenu;
+			}.bind(this);
+			
+			this.deleteSelf = function (action) {
 				var that = this;
-				viewModel.handlers.deleteNode(this, function() {
+				viewModel.handlers.deleteNode(this, action, function () {
 					$.each(that.children(), function (idx, child) { 
-						child.deleteSelf(); 
+						child.deleteSelf(action); 
 					});
 					if (that.parent() !== undefined) {
 						that.parent().children.remove(that);
@@ -209,7 +220,7 @@
 			
 			this.rename = function (newName) {
 				var that = this;
-				viewModel.handlers.renameNode(this, this.name(), newName, function() {
+				viewModel.handlers.renameNode(this, this.name(), newName, function () {
 					that.name(newName);
 					viewModel.recalculateSizes();
 				});
@@ -217,7 +228,7 @@
 			
 			this.move = function (node) {
 				var that = this;
-				viewModel.handlers.moveNode(node, this, function() {
+				viewModel.handlers.moveNode(node, this, function () {
 					node.parent().children.remove(node);
 					node.parent(that);
 					that.children.push(node);
@@ -228,7 +239,7 @@
 				});
 			}.bind(this);
 			
-			this.doubleClick = function() {
+			this.doubleClick = function () {
 				viewModel.handlers.doubleClick(this);
 			}.bind(this);
 			
@@ -265,19 +276,20 @@
 			
 			// handlers that can be overridden to implement custom functionality
 			this.handlers = {
-				selectNode : function(node, onSuccess) {
+				selectNode : function (node, onSuccess) {
 					logger('select node ' + node.name(), configuration.logTo); 
 					onSuccess();
 				},
 				addNode : function (parent, type, name, onSuccess) { 
 					logger('add new node ', configuration.logTo); 
-					onSuccess(10); 
+					// create node data to pass back
+					onSuccess({ id: 10, parent: parent, name: name }); 
 				},
 				renameNode : function (node, from, to, onSuccess) { 
 					logger('rename node "' + from + '" to "' + to + '"', configuration.logTo); 
 					onSuccess(); 
 				},
-				deleteNode : function (node, onSuccess) { 
+				deleteNode : function (node, action, onSuccess) { 
 					logger('delete node "' + node.name() + '"', configuration.logTo); 
 					onSuccess(); 
 				},
@@ -285,7 +297,7 @@
 					logger('move node "' + node.name() + '" to "' + newParent.name() + '"', configuration.logTo); 
 					onSuccess(); 
 				},
-				doubleClick : function(node) {
+				doubleClick : function (node) {
 					logger('doubled clicked ' + node.name(), configuration.logTo); 
 				},
 				startDrag : function (node) { 
@@ -309,28 +321,13 @@
 				this.contextMenu = new ko.contextMenu.viewModel(configuration.contextMenu);
 			}
 			this.children = ko.observableArray([]);
-			for(var i in configuration.children)
-			{
+			var i;
+			for (i = 0; i < configuration.children.length; i += 1) {
 				var child = configuration.children[i];
 				this.children.push(new Node(child, self, self));
 			}			
 			this.tree = undefined;
 			this.dragHolder = configuration.dragHolder || ko.observable(undefined);
-			this.addNode = function (options) {
-				if (this.selectedNode() !== undefined) {
-					this.selectedNode().addChild(options || {});
-				}
-			}.bind(this);
-			this.deleteNode = function () {
-				if (this.selectedNode() !== undefined) {
-					this.selectedNode().deleteSelf();
-				}
-			}.bind(this);
-			this.renameNode = function () {
-				if (this.selectedNode() !== undefined) {
-					this.selectedNode().isRenaming(true);
-				}
-			}.bind(this);
 			this.recalculateSizes = function () {
 				var maxNodeWidth = 0, widestNode;
 				$('.node:visible', this.tree).each(function (ind1, node) {
@@ -346,6 +343,48 @@
 				});
 				$('.node', this.tree).css('minWidth', maxNodeWidth + 5);
 			}.bind(this);
+			this.addNode = function (options) {
+				if (options instanceof Node) {
+					// if you add a full blown node we do not call the handler to create a new node simply add to the tree
+					options.isSelected(false);
+					options.setViewModel(self);
+					options.parent(self);
+					self.children.push(options);
+					options.selectNode();
+				} else {			
+					if ((options !== undefined && options.parent === undefined) || this.children().length === 0) { 
+						// add to root
+						var type = options.type !== undefined ? options.type : typeValueOrDefault('childType', undefined, this),
+							name = options.name !== undefined ? options.name : typeValueOrDefault('name', type, this),
+							rename = options.rename !== undefined ? options.rename : typeValueOrDefault('renameAfterAdd', type, this);
+							
+						this.handlers.addNode(undefined, type, name, function (data) {
+							if (data !== undefined) {
+								var newNode = new Node(data, self, self);
+								self.children.push(newNode);				
+								newNode.selectNode();
+								if (rename) {
+									newNode.isRenaming(true);
+								}
+								self.recalculateSizes();
+								newNode.saveState();
+							}
+						});
+					} else {
+						this.selectedNode().addChild(options || {});
+					}
+				}
+			}.bind(this);
+			this.deleteNode = function (action) {
+				if (this.selectedNode() !== undefined) {
+					this.selectedNode().deleteSelf(action);
+				}
+			}.bind(this);
+			this.renameNode = function () {
+				if (this.selectedNode() !== undefined) {
+					this.selectedNode().isRenaming(true);
+				}
+			}.bind(this);
         }
     };
 	
@@ -357,7 +396,7 @@
 					{{/if}}\
 						<div class=\"node\" data-bind=\"nodeDrag : isDraggable(), nodeDrop: { active : isDropTarget(), onDropComplete: move }, css :{ selected: isSelected }, click: selectNode, hover : 'hover', event : { dblclick : doubleClick }\">\
 							{{if hasChildren() }}\
-								<span class=\"handle\" data-bind=\"click: toggleFolder, bubble : false, style: { marginLeft: indent() }, hover : 'hover'\"></span>{{else}}<span class=\"handle\" data-bind=\"style: { marginLeft: indent() }\"></span>{{/if}}<span class=\"icon\"></span><label data-bind=\"visible: !isRenaming()\">${ name }</label><input class=\"rename\" type=\"text\" data-bind=\"nodeRename: name, onRenameComplete : rename, nodeSelectVisible: isRenaming\"/>\
+								<span class=\"handle\" data-bind=\"click: toggleFolder, bubble : false, style: { marginLeft: indent() }, hover : 'hover'\"></span>{{else}}<span class=\"handle\" data-bind=\"style: { marginLeft: indent() }\"></span>{{/if}}<span class=\"icon\"></span><label data-bind=\"visible: !isRenaming()\" unselectable=\"on\">${ name }</label><input class=\"rename\" type=\"text\" data-bind=\"nodeRename: name, onRenameComplete : rename, nodeSelectVisible: isRenaming\"/>\
 						</div>\
 						{{if hasChildren() }}\
 							<ul data-bind='visible: isOpen, template: { name: \"nodeTemplate\", foreach: children }'></ul>\
@@ -378,9 +417,10 @@
 					cursorAt: typeValueOrDefault('dragCursorAt', node.type(), node.viewModel),
 					appendTo : 'body',
 					connectToSortable : viewModel.connectToSortable(),
-					helper: function(event, element) { 
+					helper: function (event, element) { 
 						var helper = typeValueOrDefault('dragHelper', node.type(), node.viewModel); 
-						return helper.call(viewModel, event, element); },
+						return helper.call(viewModel, event, element); 
+					},
 					zIndex: 200000,
 					addClasses: false,
 					distance: 10,
@@ -401,8 +441,7 @@
 			
 			if (!active) {
 				$element.draggable('disable');
-			}
-			else {
+			} else {
 				$element.draggable('enable');
 			}
 		}
@@ -419,8 +458,8 @@
 					addClasses: false,
 					drop: function (e, ui) {
 						setTimeout(function () { 
-										handler(viewModel.dropped()); 
-									}, 0);
+							handler(viewModel.dropped()); 
+						}, 0);
 					}
 				};
 			$element.droppable(dropOptions);
@@ -431,8 +470,7 @@
 			
 			if (!active) {
 				$element.droppable('disable');
-			}
-			else {
+			} else {
 				$element.droppable('enable');
 			}
 		}
@@ -461,7 +499,7 @@
 					ko.bindingHandlers.nodeRename.updateValue(element, valueAccessor, allBindingsAccessor, viewModel); 
 				};
 					
-			$element.focus('focus', function () {
+			$element.click(function () { return false; }).focus('focus', function () {
 				/* add scroll to element on focus http://stackoverflow.com/questions/4217962/scroll-to-an-element-using-jquery*/
 			});
 			$element.bind('blur', updateHandler);
@@ -480,6 +518,8 @@
     ko.bindingHandlers.tree = {
         init: function (element, viewModelAccessor, allBindingsAccessor, viewModel) {
 			var value = viewModelAccessor(), treeContainer;
+			// needed to recalculate node sizes when multiple trees
+			value.tree = element;
 			
 			treeContainer = element.appendChild(document.createElement("DIV"));	
 			logger('Initialize tree ' + value.children().length + ' root nodes found', value.logTo);
