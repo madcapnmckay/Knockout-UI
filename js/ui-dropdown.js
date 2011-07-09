@@ -1,5 +1,14 @@
 ﻿/*global document, window, $, ko, debug, setTimeout, alert */
-
+/*
+ * Knockout UI Auto-complete Drop Down
+ * 
+ * Copyright (c) 2011 Ian Mckay
+ *
+ * https://github.com/madcapnmckay/Knockout-UI
+ *
+ * License: MIT http://www.opensource.org/licenses/mit-license.php
+ *
+ */
 (function () {
     // private functions/variables
     var templateEngine = new ko.jqueryTmplTemplateEngine();
