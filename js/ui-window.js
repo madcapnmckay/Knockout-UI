@@ -81,6 +81,14 @@
 			this.buttonsChange();
 			this.buttons.subscribe(this.buttonsChange);
 			
+			this.left = function() {
+				return this.position().split(',')[0] + 'px'
+			}.bind(this);
+			
+			this.top = function() {
+				return this.position().split(',')[1] + 'px'
+			}.bind(this);
+			
 			this.minimize = function () {
 				this.isMinimized(!this.isMinimized());
 			}.bind(this);
@@ -117,10 +125,10 @@
         }
     };
 	
-	ko.addTemplateSafe("koWindowTemplate", "\
-                    <div class=\"${cssClass}\" data-bind=\"koWindow : isPinned, koWindowVisible : !isMinimized(), style : { height: (height()- 35) + 'px', width: width() + 'px' }, css : { loading : isLoading() }\">\
+	ko.addTemplateSafe("windowTemplate", "\
+                    <div class=\"ui-window-stack ${cssClass}\" data-bind=\"window : isPinned, windowVisible : !isMinimized(), style : { height: (height()- 35) + 'px', width: width() + 'px' }, css : { loading : isLoading() }\">\
 						<div class=\"inner-window\" data-bind=\"style : { width: (width() + 8) + 'px', height : (height() + 3) + 'px' }\">\
-							<div class=\"title-bar\" data-bind='template: { name : \"koWindowButtonTemplate\", foreach: buttons }'><span class=\"loader\"/></div>\
+							<div class=\"title-bar\" data-bind='template: { name : \"windowButtonTemplate\", foreach: buttons }'><span class=\"loader\"/></div>\
 						</div>\
 						<div class=\"outer-content\">\
 							<div class=\"inner-content\" data-bind=\"style : { height: (height() - 39) + 'px' }\">\
@@ -128,21 +136,21 @@
 						</div>\
 					</div>", templateEngine);
 					
-	ko.addTemplateSafe("koWindowButtonTemplate", "\
+	ko.addTemplateSafe("windowButtonTemplate", "\
                     <div class=\"${cssClass}\" data-bind=\"click : clicked, attr: { title: title }, css : { right : isFirst(), left : isLast() }, hover : 'title-button-hover'\"><div class=\"title-button-inner\"><div class=\"icon ${ iconCssClass }\"></div></div></div>", 
 					templateEngine);				
 			
 	ko.addTemplateSafe("koTaskbarItemTemplate", "\
-                    <div class=\"taskbar-item\" data-bind=\"click: minimize, hover: 'taskbar-item-hover', koTaskbarVisible : isMinimized()\" title=\"${ name }\">\
+                    <div class=\"taskbar-item\" data-bind=\"click: minimize, hover: 'taskbar-item-hover', taskbarVisible : isMinimized()\" title=\"${ name }\" data-id=\"${ id }\">\
 						<div class=\"inner-taskbar-item\">\
 							<div class=\"taskbar-icon ${ taskbarCssClass }\">\
 							</div>\
 						</div>\
 					</div>", templateEngine);
 						
-	ko.addTemplateSafe("koWindowContainerTemplate", "\
+	ko.addTemplateSafe("windowContainerTemplate", "\
 					<div class=\"window-container\" >\
-						<div class=\"windows ${ cssClass }\" data-bind='template: { name : \"koWindowTemplate\", foreach: windows }'></div>\
+						<div class=\"windows ${ cssClass }\" data-bind='template: { name : \"windowTemplate\", foreach: windows }'></div>\
 						<div class=\"${ taskbarCssClass }\">\
 							<div class=\"inner-taskbar\" data-bind='template: { name : \"koTaskbarItemTemplate\", foreach: windows }'></div>\
 						</div>\
@@ -153,7 +161,7 @@
 			var value = valueAccessor();
 				windowContainer = element.appendChild(document.createElement("DIV"));
             
-			ko.renderTemplate("koWindowContainerTemplate", value, { templateEngine: templateEngine }, windowContainer, "replaceNode");
+			ko.renderTemplate("windowContainerTemplate", value, { templateEngine: templateEngine }, windowContainer, "replaceNode");
         },
 		update : function (element, valueAccessor, allBindingsAccessor, viewModel) {
 			var value = valueAccessor(), cssClass = value.cssClass();
@@ -161,35 +169,26 @@
 			// render the window bodies
 			var windowContainers = $('.' + cssClass + ' .inner-content', element);			
 			for (var i = 0; i < value.windows().length; i += 1) {
-				var windowVM = value.windows()[i], body, parent;
-					
+				var windowVM = value.windows()[i];
+				
 				if (windowVM.rendered) {
 					continue;
 				}
 					
-				body = windowContainers[i];
-				parent = $(body).closest('.' + cssClass);
-				
-				parent.get(0).style.display = "";
-				windowVM.create(body, windowVM, viewModel);
-				
-				if (windowVM.isMinimized()) {
-					parent.get(0).style.display = "none";	
-				}
-				
+				windowVM.create(windowContainers[i], windowVM, viewModel);				
 				windowVM.rendered = true;
 			}
 		}
     };
 	
-	ko.bindingHandlers.koWindow = {
+	ko.bindingHandlers.window = {
         init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
 			var $element = $(element),
 				pinned = ko.utils.unwrapObservable(valueAccessor()),
 				dragOptions = {
 					addClasses: false,
 					handle : '.title-bar',
-					stack: "." + viewModel.cssClass(),
+					stack: ".ui-window-stack",
 					scroll : false,
 					stop : function (e, ui) { 
 						viewModel.position(ui.offset.left + ',' + ui.offset.top);
@@ -208,7 +207,7 @@
 					$(this).maxZIndex({ group : '.' + viewModel.cssClass(), inc : 1}); 
 				});
 			
-			$element.css({'position' : 'absolute', 'top': viewModel.position().split(',')[1] + 'px', 'left' : viewModel.position().split(',')[0] + 'px'});
+			$element.css({'position' : 'absolute', 'top': viewModel.top(), 'left' : viewModel.left() });
 		},
 		update : function (element, valueAccessor, allBindingsAccessor, viewModel) {
 			var $element = $(element),
@@ -222,7 +221,7 @@
 		}
     };
 	
-	ko.bindingHandlers.koTaskbarVisible = {
+	ko.bindingHandlers.taskbarVisible = {
 		'init': function (element, valueAccessor) {
 			var $element = $(element),
 				value = ko.utils.unwrapObservable(valueAccessor()),
@@ -256,48 +255,50 @@
 		}
     };
 	
-	ko.bindingHandlers.koWindowVisible = {
+	ko.bindingHandlers.windowVisible = {
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {
 			var $element = $(element),
-				value = ko.utils.unwrapObservable(valueAccessor()),
-				isCurrentlyVisible = element.style.display !== "none";
+				show = ko.utils.unwrapObservable(valueAccessor());
 				
-			if (value && !isCurrentlyVisible) {
-				element.style.display = "";
+			if (show) {
+				$element.css({ 'top': viewModel.top(), 'left' : viewModel.left() });
 			}
-			else if ((!value) && isCurrentlyVisible) {
-				element.style.display = "none";
+			else {
+				// instead of using display none which can mess up the contents of the window
+				$element.css({ 'left' : (-viewModel.width() * 2) + 'px' });
 			}
 		},
         'update': function (element, valueAccessor, allBindingsAccessor, viewModel) {
 			var $element = $(element),
-				value = ko.utils.unwrapObservable(valueAccessor()),
-				isCurrentlyVisible = element.style.display !== "none",
+				show = ko.utils.unwrapObservable(valueAccessor()),
+				visible = $element.offset().left > -viewModel.width(),
 				$clone = $element.clone(false),
 				taskbarPos = $('.' + viewModel.parentViewModel.taskbarCssClass()).offset(),
-				buttonPos = $('.' + viewModel.taskbarCssClass).offset();
+				buttonPos = $('.taskbar-item[data-id="' + viewModel.id + '"]').offset();
 					
-			if (value && !isCurrentlyVisible) {
-				// maximise
-				$clone.width(55).height(45).css({'opacity' : 0, 'top' : buttonPos.top + 'px', 'left' : buttonPos.left + 'px'}).appendTo('div.window-container .windows');
-				$clone.css('position', 'fixed').show().animate(
-					{
-						opacity: 1,
-						left: viewModel.position().split(',')[0],
-						top: viewModel.position().split(',')[1],
-						width: $element.outerWidth(false),
-						height: $element.outerHeight(false)
-					}, 
-					200,
-					function () {
-						$(this).remove();
-						$element.show();
-					}
-				);
+			if (show) {
+				if (buttonPos && !visible) {
+					// maximise
+					$clone.width(55).height(45).css({'opacity' : 0, 'top' : buttonPos.top + 'px', 'left' : buttonPos.left + 'px'}).appendTo('div.window-container .windows');
+					$clone.css('position', 'fixed').show().animate(
+						{
+							opacity: 1,
+							left: viewModel.position().split(',')[0],
+							top: viewModel.position().split(',')[1],
+							width: $element.outerWidth(false),
+							height: $element.outerHeight(false)
+						}, 
+						200,
+						function () {
+							$(this).remove();
+							$element.css({ 'top': viewModel.top(), 'left' : viewModel.left() });
+						}
+					);
+				}
 			}
-			else if ((!value) && isCurrentlyVisible) {
+			else if (taskbarPos) {
 				// minimise
-				$element.hide();
+				$element.css({ 'left' : (-viewModel.width() * 2) + 'px' });
 				$clone.css('position', 'fixed').appendTo('div.window-container .windows').animate(
 					{
 						opacity: 0,
