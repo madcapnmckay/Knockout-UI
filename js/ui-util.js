@@ -70,4 +70,8 @@
             $(this).css("z-index", zmax);
         });
     };
+	
+	$.IsNullOrWhiteSpace = $.fn.IsNullOrWhiteSpace = function(value) {
+		return !value || (/^\s*$/).test(value);
+	}
 } ());
