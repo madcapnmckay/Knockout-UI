@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Editor Demo</title>
+	<link rel="stylesheet" href="css/reset.css" type="text/css"/>
+	<link rel="stylesheet" href="css/style.css" type="text/css"/>
+
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
+	
+	<!-- Dependencies -->
+	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
+	<script type="text/javascript" src="../lib/knockout-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../lib/rangy-core.js"></script>
+	<script type="text/javascript" src="../lib/rangy-selectionsaverestore.js"></script>
+	<script type="text/javascript" src="../lib/rangy-cssclassapplier.js"></script>
+	
+	<!-- Add as many modes for codemirror as you need -->
+	<script type="text/javascript" src="../lib/codemirror/codemirror.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/clike/clike.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/css/css.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/diff/diff.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/haskell/haskell.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/htmlmixed/htmlmixed.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/javascript/javascript.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/lua/lua.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/php/php.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/plsql/plsql.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/python/python.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/rst/rst.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/scheme/scheme.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/python/python.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/smalltalk/smalltalk.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/sparql/sparql.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/stex/stex.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/xml/xml.js"></script>
+	<script type="text/javascript" src="../lib/codemirror/yaml/yaml.js"></script>
+	<link rel="stylesheet" href="../lib/codemirror/codemirror.css" type="text/css"/>
+	<link rel="stylesheet" href="../lib/codemirror/default.css" type="text/css"/>
+	
+	<link rel="stylesheet" href="../css/ui-editor.css" type="text/css"/>
+	<link rel="stylesheet" href="../css/ui-window.css" type="text/css"/>
+	
+	<script type="text/javascript" src="../js/ui-util.js"></script>
+	<script type="text/javascript" src="../js/ui-editor.js"></script>
+	
+	<script src="../lib/beautify-html.js"></script>
+	<script type="text/javascript">
+		var the = {
+			beautify_in_progress: false
+		};
+		function beautify(source) {
+			if (the.beautify_in_progress) return;
+
+			the.beautify_in_progress = true;
+
+			var indent_size = 4;
+			var indent_char = indent_size == 1 ? '\t' : ' ';
+			var preserve_newlines = true;
+			var keep_array_indentation = false;
+			var brace_style = 'collapse';
+
+			var comment_mark = '<-' + '-';
+			var opts = {
+						indent_size: indent_size,
+						indent_char: indent_char,
+						preserve_newlines:preserve_newlines,
+						brace_style: brace_style,
+						keep_array_indentation:keep_array_indentation,
+						space_after_anon_function:true};
+
+
+			var v = style_html(source, opts)
+			the.beautify_in_progress = false;
+			return v;
+		}
+	</script>
+	<style type="text/css">
+		#demo { overflow: hidden; }
+		#result { height: 900px; width: 880px; }
+		pre { white-space: pre-wrap; }
+		.demo ul { list-style-type:disc; margin-left: 20px; }
+		.demo ol { list-style-type:decimal; margin-left: 20px; }
+		pre.code { padding: 10px 20px; background-color: #EEEEEE; font-family: monospace; margin-bottom: 20px; }
+		u { text-decoration: underline; }
+		b { font-weight: bold; }
+		sup {font-size:xx-small; vertical-align:super;} 
+		sub {font-size:xx-small; vertical-align:bottom;} 
+		blockquote { margin: 30px; border : 1px solid #000; padding: 20px; font-family: Georgia, serif; font-size: 1.1em; background-color: #DDDDDD; }
+	</style>
+</head>
+<body>
+	<div class="central-column">
+		<h1>Editor</h1>
+		<p>This is an experiemental rich text editor that uses contenteditable to transform any html element into an editable area. Contenteditable is slowly being standardised but there are still many inconsistencies across the browser types.</p>
+		<p>A single instance of the editor is rendered per page and the editor is positioned when you first click on an editable area.</p> 
+		<p>A focus for the editor was to allow easy insertion of code samples for writing blog posts etc. For this the editor uses <a href="http://codemirror.net/">codemirror</a> by Marijn Haverbeke. 
+		It also uses <a href="http://code.google.com/p/rangy/">rangy</a> by Tim Down to ensure cross browser selection works.</p>
+	    <p>This is fairly basic as it stands but it works reasonably well. I hope to extend it as bugs are found and the standards converge.</p>
+		<h2>Demo (all text below here is editable)</h2>
+		<div class="demo">
+				<div id="editableArea1" data-bind="editable: editorSettings, output: updateOutput">
+					<h1>Heading 1</h1>
+					<h2>Heading 2</h2>
+					<blockquote>
+						This is an example blockquote
+					</blockquote>
+					<p>
+						An example paragraph, <u>with an underlined portion</u>. Experiment with applying different styles and check the html generated at the bottom of this page.
+					</p>
+					<p>
+						Highlight this and insert an image here
+					</p>
+					<p>
+						You can insert/edit <a href="http://knockoutjs.com/">links</a> by selecting text and clicking the link button
+					</p>
+					<ol>
+						<li>List item 1</li>
+						<li>List item 2</li>
+						<li>List item 3</li>
+					</ol>
+					<h3>Heading 3</h3>
+					<p>
+						Below is an example of a code block. This is not editable inline, try and highlight the code and click the code button to edit (there are known issues with chrome for this). The resultant markup uses an rss friendly pre element
+						to retain formatting. It also is tagged with the language mode on a data-mode attribute for highlighting when loaded in a none writable mode.
+					</p>
+					<pre class="code" data-mode="javascript" contenteditable="false">
+var someFunction = function() {
+	var boo = false;
+}</pre>
+					<ul>
+						<li>List item 1</li>
+						<li>List item 2</li>
+						<li>List item 3</li>
+					</ul>					
+				</div>
+		</div>
+		<h3>Html Generated</h3>
+		<p>The below has been processed by <a href="https://github.com/einars/js-beautify">beautify js</a> to make it easier to read. The real markup can be seen by clicking the html button on the editor.</p>
+		<textarea id="result"></textarea>
+		<div class="footer">
+			<ul>
+				<li>License: <a href="http://www.opensource.org/licenses/mit-license.php">MIT http://www.opensource.org/licenses/mit-license.php</a></li>
+				<li>Project Home: <a href="https://github.com/madcapnmckay/Knockout-UI">https://github.com/madcapnmckay/Knockout-UI</a></li>
+			</ul>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var updateOutput = function(contents) {
+			$('#result').val(beautify(contents));
+		}
+	
+		$(function () {		
+			var myModel = {};
+			
+			myModel.editorSettings = new ko.editable.settings({ imagePickerHandler: function(onSuccess) { 
+				// we could call a service here, for now lets fake an ajax call
+				var results = [
+					{ src: "http://lol.ianloic.com/image-cache/2ff/2ff0236b5a3b9f45414457db219803a9.jpg", title: "some title 1", altText: "some alt text 1"  },
+					{ src: "http://lol.ianloic.com/image-cache/4e1/4e104c20507d9ac354193e66bdc32124.jpg", title: "some title 2", altText: "some alt text 2"  },
+					{ src: "http://lol.ianloic.com/image-cache/de0/de0fc43880d525e72d013638dbbe5e6b.jpg", title: "some title 3", altText: "some alt text 3"  },
+					{ src: "http://lol.ianloic.com/image-cache/b0b/b0bd4b663f7dbf0f70a7400ab97b2ce1.jpg", title: "some title 4", altText: "some alt text 4"  },
+					{ src: "http://lol.ianloic.com/image-cache/c21/c21de1baa6245232699d9d29d2dcbb6b.jpg", title: "some title 5", altText: "some alt text 5"  },
+					{ src: "http://lol.ianloic.com/image-cache/3c8/3c84a83ad0844644bab70fe24b525a3d.jpg", title: "some title 6", altText: "some alt text 6"  },
+					{ src: "http://lol.ianloic.com/image-cache/1a1/1a1b26c4def09bd9e09666a51ca4cdfe.jpg", title: "some title 7", altText: "some alt text 7"  },
+					{ src: "http://lol.ianloic.com/image-cache/407/40786684125659748cc1c92fb5bfc15f.jpg", title: "some title 8", altText: "some alt text 8"  },
+					{ src: "http://lol.ianloic.com/image-cache/05f/05ff574023935efded87d574234af4eb.jpg", title: "some title 9", altText: "some alt text 9"  },
+					{ src: "http://lol.ianloic.com/image-cache/af7/af7dbe51db361ff667188fc42bd54d13.jpg", title: "some title 10", altText: "some alt text 10"  },
+					{ src: "http://lol.ianloic.com/image-cache/4e4/4e46239f5ca78b9fed5f040a5f94b922.jpg", title: "some title 11", altText: "some alt text 11"  },
+					{ src: "http://lol.ianloic.com/image-cache/7d3/7d387414ff627bd6289129073e9b83aa.jpg", title: "some title 12", altText: "some alt text 12"  },
+					{ src: "http://lol.ianloic.com/image-cache/2b0/2b0dbaeba12f5abcc4158719411dc41d.jpg", title: "some title 13", altText: "some alt text 13"  },
+					{ src: "http://lol.ianloic.com/image-cache/edf/edfb72bf470555b200b6306676ef8765.jpg", title: "some title 14", altText: "some alt text 14"  }
+				];
+				onSuccess(results);
+			}});
+			 
+			ko.applyBindings(myModel);
+		});
+	</script>
+</body>
+</html>

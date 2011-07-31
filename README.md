@@ -17,6 +17,7 @@ Included :
 * Context Menu
 * Window Manager
 * Tabs
+* Editor - This is an experimental contenteditable rich text editor, and is designed only for the latest browsers.
 
 In the pipeline :
 -----------------
