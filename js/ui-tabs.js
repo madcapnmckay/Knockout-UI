@@ -40,7 +40,7 @@
 				this.isActive(data.isActive);
 			}
 		
-			this.show = function (node) {
+			this.show = function () {
 				$.each(parentViewModel.tabs(), 
 					function (index, element) { 
 						element.isActive(false);
