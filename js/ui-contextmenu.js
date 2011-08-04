@@ -110,7 +110,7 @@
 
 	ko.bindingHandlers.contextMenu = {
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {
-			var $element = $(element), menuContainer, item, config, menu,
+			var $element = $(element), menuContainer, item, config, menu, parentVM = viewModel,
 				value = ko.utils.unwrapObservable(valueAccessor()),
 				builder = value.build;
 				
@@ -118,7 +118,7 @@
 				.addClass('nocontext')
 				.mousedown(function (e) {
 					if (e.which === 3) {
-						config = value.build(e, viewModel);
+						config = value.build(e, parentVM);
 						menu = value.contextMenus().filter(function (x) { 
 								return x.name() === config.name; 
 							})[0];
@@ -129,17 +129,17 @@
 							config.menu = menu;
 							config.mousePosition = e;
 							menuContainer = $('<div></div>').appendTo('body');
-							// assign the disabled items
-							if (config.disable !== undefined && config.disable.length > 0) {
-								for (var i = 0; i < config.menu.items().length; i += 1) {
-									item = config.menu.items()[i];
-									item.disabled(config.disable.indexOf(item.text()) !== -1);
-								}
+							
+							// disable items
+							for (var i = 0; i < config.menu.items().length; i += 1) {
+								item = config.menu.items()[i];				
+								item.disabled(config.disable !== undefined && config.disable.indexOf(item.text()) !== -1);
 							}
+							
 							// assign the data item
 							for (var j = 0; j < config.menu.items().length; j += 1) {
 								var menuItem = config.menu.items()[j];
-								menuItem.addDataItem(viewModel);
+								menuItem.addDataItem(parentVM);
 							}
 							
 							// calculate z-index
