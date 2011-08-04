@@ -89,7 +89,7 @@
 					handlers: { 
 						addNode : function (parent, type, name, onSuccess) { 
 							nextId = nextId + 1; 
-							onSuccess(nextId);
+							onSuccess({ id: nextId, parent: parent, name: name }); 
 						}		
 					},
 					logTo : '#log1',
@@ -109,7 +109,7 @@
 									contextMenus : 
 									[
 										{ 
-											name : 'file',
+											name : 'foldercontext',
 											width : 190,
 											items : [ 
 												{ text : 'Delete',  run : function(dataItem) { 
@@ -125,25 +125,44 @@
 													items : [
 														{ 
 															text : 'Page', 
-															iconClass: 'page', 
+															iconCssClass: 'page', 
 															run : 	function(dataItem) { 
 																		dataItem.addChild({ type : 'page' });
 																	} 
 														},
 														{ 
 															text : 'Folder', 
-															iconClass: 'folder', 
+															iconCssClass: 'folder', 
 															run : 	function(dataItem) { 
 																		dataItem.addChild({ type: 'folder' }); 
 																	} 
 														},
 													] }
 											]
+										},
+										{ 
+											name : 'pagecontext',
+											width : 190,
+											items : [ 
+												{ text : 'Delete',  run : function(dataItem) { 
+															dataItem.deleteSelf(); 
+														} 
+												},  
+												{ text : 'Rename',   run : function(dataItem) { 
+															dataItem.isRenaming(true); 
+														} 
+												}
+											]
 										}
 									],
 									build : function(event, dataItem) {
 										dataItem.selectNode();
-										return { name : 'file' };
+										var type = dataItem.type();
+										if (type == 'folder') {
+											return { name : 'foldercontext' };
+										} else {
+											return { name : 'pagecontext' };
+										}
 									}
 					}
 				}
@@ -447,7 +466,7 @@
 								contextMenus : 
 								[
 									{ 
-										name : 'file',
+										name : 'foldercontext',
 										width : 190,
 										items : [ 
 											{ text : 'Delete',  run : function(dataItem) { 
@@ -463,25 +482,44 @@
 												items : [
 													{ 
 														text : 'Page', 
-														iconClass: 'page', 
+														iconCssClass: 'page', 
 														run : 	function(dataItem) { 
 																	dataItem.addChild({ type : 'page' });
 																} 
 													},
 													{ 
 														text : 'Folder', 
-														iconClass: 'folder', 
+														iconCssClass: 'folder', 
 														run : 	function(dataItem) { 
 																	dataItem.addChild({ type: 'folder' }); 
 																} 
 													},
 												] }
 										]
+									},
+									{ 
+										name : 'pagecontext',
+										width : 190,
+										items : [ 
+											{ text : 'Delete',  run : function(dataItem) { 
+														dataItem.deleteSelf(); 
+													} 
+											},  
+											{ text : 'Rename',   run : function(dataItem) { 
+														dataItem.isRenaming(true); 
+													} 
+											}
+										]
 									}
 								],
 								build : function(event, dataItem) {
 									dataItem.selectNode();
-									return { name : 'file' };
+									var type = dataItem.type();
+									if (type == 'folder') {
+										return { name : 'foldercontext' };
+									} else {
+										return { name : 'pagecontext' };
+									}
 								}
 				}
 			},
