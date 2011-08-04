@@ -17,6 +17,7 @@
 			viewHtmlModal: function(area) {
 				var HtmlViewer =  function(html) { 
 					this.template = 'htmlEditorTemplate';
+					this.modalCssClass = area.modalCssClass() || 'ui-window';
 					this.html = ko.observable(html);
 					
 					this.insert = function() {
@@ -57,6 +58,7 @@
 				
 				var LinkPicker =  function(href, title, target) { 
 					this.template = 'linkEditorTemplate';
+					this.modalCssClass = area.modalCssClass() || 'ui-window';
 					this.href = ko.observable(href);
 					this.title = ko.observable(title);
 					this.blankTarget = ko.observable(target || false);
@@ -128,6 +130,7 @@
 				
 				var CodePreview = function(value) {
 					this.template = 'codeEditorTemplate';
+					this.modalCssClass = area.modalCssClass() || 'ui-window';
 					this.code = value;
 					
 					this.selectedLanguage = ko.observable();
@@ -199,6 +202,7 @@
 							
 				var ImagePicker = function() {
 					this.template = 'imagePickerTemplate';
+					this.modalCssClass = area.modalCssClass() || 'ui-window';
 					this.imageSelected = ko.observable();
 					
 					this.isLoading = ko.observable(true);
@@ -588,6 +592,7 @@
 			
 			var self = this, container = element, editor = editor, before;
 			this.isActive = ko.observable(true);
+			this.modalCssClass = editor.modalCssClass;
 			
 			// returns the inner html of the editable
 			this.html = function() {
@@ -613,6 +618,14 @@
 				.focus(function() {
 					// call the editor, here boy!
 					editor.activate(self);
+				})
+				.dblclick(function() {
+					// get cursor position
+					var sel = rangy.getSelection();
+					if (sel && sel.anchorNode) {
+						editor.relativeTo(sel.anchorNode);
+						editor.isPositioned(false);
+					}
 				})
 				.bind('blur keyup paste', function(event) {
 					if (before !== self.html()) {
@@ -641,9 +654,11 @@
 			this.position = ko.observable('0,0');
 			this.area = ko.observable();
 			this.isPositioned = ko.observable(false);
-
+			this.modalCssClass = ko.observable(settings.modalCssClass);
+			
 			this.imagePickerHandler = settings.imagePickerHandler;
 			
+			this.relativeTo = ko.observable();
 
 			var handler = settings.handler, snapshot;
 
@@ -658,12 +673,13 @@
 				this.groups()[this.groups().length - 1].last = true;
 			}
 			
-			this.activate = function(content) {
+			this.activate = function(content, relativeTo) {
 				if (!this.isVisible()) {
 					this.isVisible(true);
 					
 					if (this.area() !== content) {
 						this.area(content);
+						this.relativeTo(undefined);
 						this.isPositioned(false);
 					}
 					// take a snapshot
@@ -777,6 +793,7 @@
 			this.position = ko.observable('0,0');
 			this.groups = ko.editable.defaults.groups;
 			this.cssClass = 'editable';
+			this.modalCssClass = configuration.modalCssClass;
 			this.handler = configuration.handler;
 			this.rendered = false;
 			
@@ -857,8 +874,8 @@
 			</div>", templateEngine);
 			
 	ko.addTemplateSafe("modalTemplate", "\
-			<div class=\"ui-modal-shroud\" data-bind='click: close, clickBubble: false'></div>\
-			<div class=\"ui-modal ui-window ${cssClass}\" data-bind=\"click: function() {}, clickBubble: false, style : { height: (height()- 42) + 'px', width: (width() - 12) + 'px', marginLeft: -(width() / 2)  + 'px', marginTop: -(height() / 2)  + 'px'  }\">\
+			<div class=\"ui-modal-shroud ${ contents.modalCssClass }\" data-bind='click: close, clickBubble: false'></div>\
+			<div class=\"ui-modal ${ contents.modalCssClass } ${cssClass}\" data-bind=\"click: function() {}, clickBubble: false, style : { height: (height()- 42) + 'px', width: (width() - 12) + 'px', marginLeft: -(width() / 2)  + 'px', marginTop: -(height() / 2)  + 'px'  }\">\
 				<div class=\"inner-window\" data-bind=\"style : { width: (width() - 4) + 'px', height : (height() - 4) + 'px' }\">\
 					<div class=\"title-bar\">\
 						<div class=\"title-button red right left\" title=\"click here to close\" data-bind='click: close'><div class=\"title-button-inner\"><div class=\"icon close\"></div></div></div>\
@@ -924,6 +941,11 @@
 	
 	ko.bindingHandlers.editable = {
 		'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {
+			// initialize rangy
+			if (rangy && !rangy.initialized) {
+				rangy.init();
+			}
+		
 			var $element = $(element),
 				settings = ko.utils.unwrapObservable(valueAccessor()),
 				output = allBindingsAccessor()['output'], area, instance, container;
@@ -979,6 +1001,7 @@
 				dragOptions = {
 					addClasses: false,
 					handle : '.move',
+					scroll: false,
 					stop : function (e, ui) { 
 						viewModel.position(ui.offset.left + ',' + ui.offset.top);
 					}
@@ -989,13 +1012,14 @@
 		},
 		'update': function (element, valueAccessor, allBindingsAccessor, viewModel) {
 			if (viewModel.isVisible() && viewModel.area() !== undefined && !viewModel.isPositioned()) {
-				$element = $(element);
-				$element.position({ my: 'right bottom', at: 'right top', of: viewModel.area().dom(), offset: '0 -5' });
+				$element = $(element), relative = viewModel.relativeTo() === undefined ? viewModel.area().dom() : $(viewModel.relativeTo());
+				relative = relative.get(0).nodeType == 3 ? relative.parent() : relative;
+				$element.position({ my: 'right bottom', at: 'right top', of: relative, offset: '0 -5' });
 				// record position
 				var offset = $element.offset();
 				viewModel.position(offset.left + ',' + offset.top);
 				viewModel.isPositioned(true);
-			}
+			}			
 		}
 	};
 })();
