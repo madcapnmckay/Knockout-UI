@@ -252,11 +252,11 @@
 					}.bind(this);
 					
 					this.imageResizedWidth = ko.dependentObservable(function() {
-						return this.resizeRatio() * this.imageWidth;
+						return Math.ceil(this.resizeRatio() * this.imageWidth);
 					}, this);
 					
 					this.imageResizedHeight = ko.dependentObservable(function() {
-						return this.resizeRatio() * this.imageHeight;
+						return Math.ceil(this.resizeRatio() * this.imageHeight);
 					}, this);
 					
 					this.isSelected = ko.dependentObservable(function() {
@@ -619,6 +619,10 @@
 					// call the editor, here boy!
 					editor.activate(self);
 				})
+				.click(function() {
+					// save the selection
+					ko.contenteditable.util.saveSelection();
+				})
 				.dblclick(function() {
 					// get cursor position
 					var sel = rangy.getSelection();
@@ -706,8 +710,7 @@
 			}.bind(this);
 			
 			this.runCommand = function(command, args) {
-				if (this.area() !== undefined) {
-					ko.contenteditable.util.saveSelection();
+				if (this.area() !== undefined && savedSel) {
 					if (typeof command === 'function') {
 						command.apply(this, [ this.area() ].concat(args));
 					} else {
@@ -716,6 +719,10 @@
 				}
 				return false;
 			};	
+			
+			this.keepFocus = function() {
+				return false;
+			}
 		};
 
 	ko.editable = {
@@ -920,7 +927,7 @@
 			<div class=\"group\" data-bind='css : { first: first, last: last },template: { name: \"rowTemplate\", foreach: rows }'></div>", templateEngine);
 	
 	ko.addTemplateSafe("editorTemplate", "\
-			<div id=\"ko-editor\" class=\"ep-editor\" data-bind=\"visible : isVisible, editorPosition : area, click: function() { }, clickBubble: false\">\
+			<div id=\"ko-editor\" class=\"ep-editor\" data-bind=\"visible : isVisible, editorPosition : area, click: keepFocus, clickBubble: false\">\
 				<div class=\"inner\">\
 					<div class=\"content\">\
 						<div class=\"buttons\" data-bind='template: { name: \"groupTemplate\", foreach: groups }'></div>\
