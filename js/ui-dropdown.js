@@ -59,7 +59,8 @@
             this.selectedText = ko.dependentObservable(function () {
 				var value = this.data();
                 var selectedItem = ko.utils.arrayFirst(this.data(), function (item) { return item.value === this.boundValue(); }, this);
-                return selectedItem === null ? "" : selectedItem.text;
+                var txt = selectedItem === null ? "" : selectedItem.text;
+				return txt;
             }, this);
 
             this.source = function (request, response) {
@@ -75,17 +76,15 @@
                             };
                         })
                 );
-            } .bind(this);
+            }.bind(this);
 
             this.select = function (event, ui) {
                 if (this.element !== undefined) {
                     this.element.val(ui.item.value);
                 }
-                var current = this.boundValue();
                 this.boundValue(ui.item.value);
-                var after = this.boundValue();
-                var i = 1;
-            } .bind(this);
+				event.preventDefault();
+            }.bind(this);
 
             this.change = function (event, ui) {
                 if (!ui.item) {
@@ -106,14 +105,14 @@
                         $input.val(this.boundValue());
                     }
                 }
-            } .bind(this);
+            }.bind(this);
 
             this.renderItem = function (ul, item) {
                 return $("<li></li>")
                     .data("item.autocomplete", item)
                     .append("<a>" + item.label + "</a>")
                     .appendTo(ul);
-            } .bind(this);
+            }.bind(this);
 
             this.open = function (event, ui) {
                 $(event.target).parent().addClass("open");
@@ -126,7 +125,7 @@
             this.showAll = function () {
                 // pass empty string as value to search for, displaying all results
                 this.search("");
-            } .bind(this);
+            }.bind(this);
         }
     };
 
