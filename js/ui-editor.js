@@ -69,6 +69,7 @@
 					
 					this.insert = function() {
 						area.execute('link', [ this.href(), this.title(), this.blankTarget() ]);
+						area.save();
 						this.modal.close();
 					}.bind(this);
 				};
@@ -80,60 +81,68 @@
 				// get current select and see if we are in an existing code block
 				var sel = rangy.getSelection(),
 					range = sel.rangeCount ? sel.getRangeAt(0) : null,
-					$anchor = sel !== undefined ? $(sel.anchorNode) : undefined,
+					$pre = sel !== undefined ? $(sel.anchorNode) : undefined,
 					contents = range !== undefined ? range.cloneContents() : undefined,
 					$containedNode = contents.childNodes.length == 1 ? $(contents.childNodes[0]) : undefined,
-					initialValue, initialMode;
+					initialValue, initialMode, existingCodeBlock;
 			
-				if ($anchor !== undefined && !$anchor.is('pre[data-mode]')) {
-					if ($anchor.parent().is('pre[data-mode]')) {
+				if ($pre && !$pre.is('pre[data-lang]')) {
+					if ($pre.parent().is('pre[data-lang]')) {
 						// chrome returns the inner textnode, others return the element itself
-						$anchor = $anchor.parent();
+						$pre = $pre.parent();
 					} else if ($containedNode) {
 						// when selected the whole element we need to check the childnodes
-						var $anchor = $containedNode
+						$pre = $containedNode
 					}	
 				}
 			
-				if ($anchor && $anchor.is('pre[data-mode]')) {
-					initialValue = $anchor.text();
-					initialMode = $anchor.attr('data-mode');
-					
-					// select the whole node in case it was just a cursor in the center
-					range.selectNode($anchor.get(0));
-					sel.setSingleRange(range);
-					ko.contenteditable.util.saveSelection();
+				if ($pre && $pre.is('pre[data-lang]')) {
+					initialValue = $pre.text();
+					initialMode = $pre.attr('data-lang');
+					existingCodeBlock = $pre.get(0);
 				}
 				
 				var area = area,
 					allLanguages = [
-						{ name: 'JavaScript', mode: 'javascript' },
-						{ name: 'XML/HTML', mode: 'xml' },
-						{ name: 'HTML mixed-mode', mode: 'htmlmixed' },
-						{ name: 'CSS', mode: 'css' },
-						{ name: 'Python', mode: 'python' },
-						{ name: 'PHP', mode: 'php' },
-						{ name: 'diff', mode: 'diff' },
-						{ name: 'C', mode: 'clike' }, 
-						{ name: 'Java', mode: 'clike' }, 
-						{ name: 'C#', mode: 'clike' },
-						{ name: 'sTeX, LaTeX', mode: 'stex' },
-						{ name: 'Haskell', mode: 'haskell' },
-						{ name: 'Smalltalk', mode: 'smalltalk' },
-						{ name: 'PL/SQL', mode: 'plsql' },
-						{ name: 'Lua', mode: 'lua' },
-						{ name: 'Scheme', mode: 'scheme' },
-						{ name: 'reStructuredText', mode: 'rst' },
-						{ name: 'YAML', mode: 'yaml' },
-						{ name: 'SPARQL', mode: 'sparql' }
+						{ name: 'JavaScript', mode: 'javascript', mime: 'text/javascript' },
+						{ name: 'Json', mode: 'javascript', mime: 'application/json' },
+						{ name: 'HTML', mode: 'xml', mime: 'text/html' },
+						{ name: 'XML', mode: 'xml', mime: 'application/xml' },
+						{ name: 'HTML mixed-mode', mode: 'htmlmixed', mime: 'text/html' },
+						{ name: 'CSS', mode: 'css', mime: 'text/css' },
+						{ name: 'Python', mode: 'python', mime: 'text/x-python' },
+						{ name: 'PHP', mode: 'php', mime: 'application/x-httpd-php' },
+						{ name: 'diff', mode: 'diff', mime: 'text/x-diff' },
+						{ name: 'C', mode: 'clike', mime: 'text/x-csrc' }, 
+						{ name: 'C++', mode: 'clike', mime: 'text/x-c++src' }, 
+						{ name: 'C#', mode: 'clike', mime: 'text/x-java' },
+						{ name: 'Java', mode: 'clike', mime: 'text/x-java' }, 
+						{ name: 'Groovy', mode: 'clike', mime: 'text/x-groovy' }, 
+						{ name: 'sTeX, LaTeX', mode: 'stex', mime: 'text/stex' },
+						{ name: 'Haskell', mode: 'haskell', mime: 'text/x-haskell' },
+						{ name: 'Smalltalk', mode: 'smalltalk', mime: 'text/x-stsrc' },
+						{ name: 'PL/SQL', mode: 'plsql', mime: 'text/x-plsql' },
+						{ name: 'Lua', mode: 'lua', mime: 'text/x-lua' },
+						{ name: 'Scheme', mode: 'scheme', mime: 'text/x-scheme' },
+						{ name: 'reStructuredText', mode: 'rst', mime: 'text/x-rst' },
+						{ name: 'YAML', mode: 'yaml', mime: 'text/x-yaml' },
+						{ name: 'SPARQL', mode: 'sparql', mime: 'application/x-sparql-query' }
 					];
 				
-				var CodePreview = function(value) {
+				var CodePreview = function(value, element) {
 					this.template = 'codeEditorTemplate';
 					this.modalCssClass = area.modalCssClass() || 'ui-window';
 					this.code = value;
+					this.element = element;
 					
-					this.selectedLanguage = ko.observable();
+					this.selectedLanguageName = ko.observable();
+					this.selectedLanguage = function() {
+						var selectedLang = this.selectedLanguageName();
+						if (selectedLang) {
+							return allLanguages.filter(function(x) { return x.name === selectedLang; })[0];
+						}
+					}.bind(this);
+					
 					this.languages = ko.observableArray([]);
 					
 					var self = this, editor;
@@ -153,9 +162,11 @@
 							myTextArea.parentNode.replaceChild(elt, myTextArea);
 						}, {
 							value: self.code,
-							mode:  self.selectedLanguage(), 
+							mode:  self.selectedLanguage().mime, 
 							lineNumbers: true, 
-							matchBrackets: true 
+							matchBrackets: true,
+							indentUnit: 4,
+							indentWithTabs: true
 						});
 						
 						// needed because the div isn't visible yet
@@ -163,14 +174,31 @@
 					};
 					
 					this.insert = function() {
-						area.execute('code', [this.selectedLanguage(), editor.getValue()]);
+						var language = this.selectedLanguage();
+						var restore = true;
+						if (this.element) {
+							// move selection
+							ko.contenteditable.util.clearSavedSelection();
+							
+							var newSel = rangy.getSelection();
+							var newRange = newSel.rangeCount ? newSel.getRangeAt(0) : null;
+							newRange.selectNode(this.element);
+							newSel.setSingleRange(range);
+							// delete element
+							$(this.element).remove();
+							
+							retore = false;
+						}
+
+						area.execute('code', [language.name, language.mode, language.mime, editor.getValue()], restore);
+						area.save();
 						this.modal.close();
 					}.bind(this);
 					
 					this.modal;
 				}
 				
-				var viewModel = new CodePreview(initialValue || 'some code');
+				var viewModel = new CodePreview(initialValue || 'some code', existingCodeBlock);
 				
 				var loaded = CodeMirror.listModes();
 								
@@ -185,13 +213,13 @@
 					}
 				}
 				if ($.IsNullOrWhiteSpace(initialMode)) {
-					viewModel.selectedLanguage(viewModel.languages()[0].mode);
+					viewModel.selectedLanguageName(viewModel.languages()[0].name);
 				} else {
-					var langSelected = viewModel.languages().filter(function(x) { return x.mode === initialMode; });
+					var langSelected = viewModel.languages().filter(function(x) { return x.name === initialMode; });
 					if (langSelected.length > 0) {
-						viewModel.selectedLanguage(langSelected[0].mode);
+						viewModel.selectedLanguageName(langSelected[0].name);
 					} else {
-						viewModel.selectedLanguage(viewModel.languages()[0].mode);
+						viewModel.selectedLanguageName(viewModel.languages()[0].name);
 					}
 				}
 				
@@ -220,6 +248,7 @@
 					
 					this.insert = function() {
 						area.execute('image', [this.src(), this.altText(), this.title()]);
+						area.save();
 						this.modal.close();
 					}.bind(this);					
 				};
@@ -301,6 +330,12 @@
 				var sel = rangy.getSelection();
 				return sel.rangeCount ? sel.getRangeAt(0) : null;
 			},
+			clearSavedSelection: function() {
+				if (savedSel) {
+					rangy.removeMarkers(savedSel);
+				}
+				savedSel = null;
+			},
 			saveSelection: function() {			
 				if (savedSel) {
 					rangy.removeMarkers(savedSel);
@@ -311,6 +346,7 @@
 			restoreSelection: function() {
 				if (savedSel) {
 					rangy.restoreSelection(savedSel, true);
+					rangy.removeMarkers(savedSel);
 					savedSel = null;
 					/*window.setTimeout(function() {
 						if (savedSelActiveElement && typeof savedSelActiveElement.focus != "undefined") {
@@ -376,9 +412,7 @@
 		}, 
 		command: {
 			bold: function() {
-				//ko.contenteditable.util.saveSelection();
 				document.execCommand('bold', false, null);
-				//ko.contenteditable.util.restoreSelection();
 				this.focus();
 				this.change();
 			},
@@ -507,12 +541,14 @@
 				this.focus();
 				this.change();
 			},
-			code: function(mode, contents) {
+			code: function(lang, mode, mime, contents) {
 			
 				var codeSnippet = $('<pre></pre>')
 										.addClass('code')
 										.attr('contenteditable', 'false')
+										.attr('data-lang', lang)
 										.attr('data-mode', mode)
+										.attr('data-mime', mime)
 										.text(contents);
 				
 				ko.contenteditable.util.insertNode(codeSnippet.get(0), false);
@@ -604,6 +640,10 @@
 				container.trigger('contents-changed');
 			};
 			
+			this.save = function() {
+				editor.save();
+			};
+			
 			// change event
 			this.focus = function() {
 				container.focus();
@@ -647,8 +687,11 @@
 				return container;
 			};
 			
-			this.execute = function(commandName, args) {
-				ko.contenteditable.util.restoreSelection();
+			this.execute = function(commandName, args, restore) {
+				restore = restore || true;
+				if (restore) {
+					ko.contenteditable.util.restoreSelection();
+				}
 				ko.contenteditable.command[commandName].apply(self, args);
 			};
 		},
@@ -677,28 +720,40 @@
 				this.groups()[this.groups().length - 1].last = true;
 			}
 			
-			this.activate = function(content, relativeTo) {
-				if (!this.isVisible()) {
-					this.isVisible(true);
-					
-					if (this.area() !== content) {
-						this.area(content);
-						this.relativeTo(undefined);
-						this.isPositioned(false);
+			this.save = function() {
+				if (this.area() && snapshot && snapshot !== this.area().html()) {
+					var contents = this.area().html();
+					if (handler !== undefined) {	
+						handler.call(this, this.area().dom(), contents);
+						// take a snapshot
+						snapshot = this.area().html();
 					}
+				}
+			};
+			
+			this.activate = function(content, relativeTo) {
+
+				this.isVisible(true);
+				
+				if (this.area() !== content) {
+					// if we are switching areas we must save
+					this.save();
+					this.area(content);
+					this.relativeTo(undefined);
+					this.isPositioned(false);
 					// take a snapshot
 					snapshot = this.area().html();
 				}
 			};
 			
-			this.deactivate = function(content) {
+			this.deactivate = function() {
 				this.isVisible(false);
+				if (savedSel) {
+					rangy.removeMarkers(savedSel);
+					savedSel = null;
+				}				
 				// push changes to handler if  things have changed
-				if (snapshot !== this.area().html()) {
-					if (handler !== undefined && this.area() != undefined) {	
-						handler.call(this, this.area().dom(), this.area().html());
-					}
-				}
+				this.save();
 			};
 			
 			this.left = function() {
@@ -743,7 +798,7 @@
 							buttons: [
 								{ name: 'Bulletted List', iconClass: 'list', description:'add a bulletted list', execCmd: 'ul' },
 								{ name: 'Numbered List', iconClass: 'orderedlist', description:'add a numbered list', execCmd: 'ol' },
-								{ name: 'Paragraph', iconClass: 'paragraph', description:'add a paragraph', execCmd: 'paragraph' },
+								{ name: 'Paragraph', iconClass: 'paragraph', description:'add a paragraph', execCmd: 'paragraph' }
 							]
 						}
 					]
@@ -802,6 +857,7 @@
 			this.cssClass = 'editable';
 			this.modalCssClass = configuration.modalCssClass;
 			this.handler = configuration.handler;
+			this.onInitialized = configuration.onInitialized;
 			this.rendered = false;
 			
 			this.imagePickerHandler = configuration.imagePickerHandler;
@@ -842,7 +898,7 @@
 				<div class=\"code-details\">\
 					<div class=\"ui-field\">\
 						<label for=\"imageSrc\">Chosen Language</label>\
-						<select data-bind=\"options: languages, optionsText: 'name', optionsValue: 'mode', value: selectedLanguage\"></select>\
+						<select data-bind=\"options: languages, optionsText: 'name', optionsValue: 'name', value: selectedLanguageName\"></select>\
 					</div>\
 					<button class=\"ui-button bottom\" title=\"Click here to insert the code\" type=\"submit\" data-bind=\"click: insert\">Save</button>\
 				</div>\
@@ -989,6 +1045,9 @@
                     }
                 }
             }
+			if (settings.onInitialized) {
+				settings.onInitialized($element);
+			}
 			//document.execCommand('insertbronreturn', false, false);			
 			
 			area = new Area($element, instance);
