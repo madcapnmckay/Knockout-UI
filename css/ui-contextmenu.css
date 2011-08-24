@@ -4,9 +4,9 @@ Context Menu
 
 .ui-context { font-size: 12px; -webkit-box-shadow:2px 2px 2px #8E8E8E; -moz-box-shadow: 2px 2px 2px #8E8E8E; box-shadow:2px 2px 2px #8E8E8E; background-color: #F1F1F1; border: solid 1px #979797; -webkit-user-select:none; -moz-user-select:none; user-select: none; }
 .ui-context ul { border: solid 2px #F5F5F5; }
-.ui-context li { padding: 0; border: solid 1px #F1F1F1; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; }
+.ui-context li { margin:0; padding: 0; border: solid 1px #F1F1F1; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; }
 .ui-context .inner { display: block; height: 18px; border: solid 1px #F1F1F1; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; }
-.ui-context label { border-left: solid 1px #FFFFFF; display: inline-block; vertical-align: top; line-height: 22px; padding: 0 0 0 5px; }
+.ui-context label { font-weight: normal; color: Black; border-left: solid 1px #FFFFFF; display: inline-block; vertical-align: top; line-height: 22px; padding: 0 0 0 5px; }
 .ui-context .icon { width: 26px; display: inline-block; border-right: solid 1px #E2E3E3; background-repeat: no-repeat; background-position: 2px 50%; }
 .ui-context .icon, .ui-context label { height: 22px; top: -2px; position: relative; }
 .ui-context li:hover { border-color: #AECFF7; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F0F3F6), to(#E7EEF6)); background-image: -moz-linear-gradient(top,  #F0F3F6,  #E7EEF6); }
