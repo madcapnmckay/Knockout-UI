@@ -502,7 +502,7 @@
 			link: function(href, title, blankTarget) {
 				var range = ko.contenteditable.util.getFirstRange();
 				if (range.collapsed) {
-					ko.contenteditable.command.text('new link', true);
+					ko.contenteditable.command.text.apply(this, [ 'new link' ]);
 				}
 			
 				if ($.IsNullOrWhiteSpace(href)) {
