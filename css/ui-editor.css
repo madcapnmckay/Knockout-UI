@@ -2,7 +2,7 @@
 Editor
 **********************/
 .ep-editor { background-color: #D3E9FE; width: 400px; opacity: 0.9; filter:alpha(opacity=90);   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#D3E9FE), to(#AECFF0)); background-image: -moz-linear-gradient(top,  #D3E9FE,  #AECFF0);
-			-webkit-box-shadow:0 0 5px Black; -moz-box-shadow: 0 0 5px Black; box-shadow:0 0 5px Black; font-family: ""; }
+			-webkit-box-shadow:0 0 5px Black; -moz-box-shadow: 0 0 5px Black; box-shadow:0 0 5px Black; z-index: 50100; }
 .ep-editor, .ep-editor .inner { -moz-border-radius:4px 4px 4px 4px; -webkit-border-radius: 4px; border-radius: 4px; border: solid 1px Black; }
 .ep-editor .inner { border-color: White;}
 .ep-editor .content { height: 72px; margin: 0; padding: 5px; position: relative; width: 388px; z-index: auto; }
@@ -15,7 +15,7 @@ Editor
 .ep-editor .buttons .group.first { border-left-width: 0; }
 .ep-editor .buttons .group.last { border-right-width: 0; }
 .ep-editor .button { margin:0; float: left; cursor: pointer; padding:1px; height: 28px; }
-.ep-editor .button, .ep-editor .button .button-inner { -moz-border-radius:2px 2px 2px 2px; -webkit-border-radius: 2px; border-radius: 2px; } 
+.ep-editor .button, .ep-editor .button .button-inner { margin:0; -moz-border-radius:2px 2px 2px 2px; -webkit-border-radius: 2px; border-radius: 2px; } 
 .ep-editor .button.hover { border: solid 1px #AABCD5; padding: 0; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F5FAFF), to(#C3D5EA)); background-image: -moz-linear-gradient(top,  #F5FAFF,  #C3D5EA); }
 .ep-editor .button .button-inner { float: none; margin:0; border-color: White; display: inline-block; border: none; background-color: transparent; padding: 5px 3px;}
 .ep-editor .button .icon { width: 16px; height: 16px; background-repeat: no-repeat; } 
@@ -65,8 +65,8 @@ Editor
 .ui-imagepicker  { width: 100%; height: 100%; } 
 .ui-imagepicker .image-details { padding: 20px; position: relative; }
 .ui-imagepicker .image-details  button { bottom: 20px; position: absolute; right: 20px; }
-.ui-imagepicker .image-list { padding: 20px 20px 0; height: 227px; position: relative; }
-.ui-imagepicker .image-panel { padding:5px; overflow-x: none; overflow-y: scroll; border: 1px solid #9E9E9E; height: 100%; box-shadow: 0 0 2px #AECFF0 inset; }
+.ui-imagepicker .image-list { padding: 20px 20px 0; height: 247px; position: relative; }
+.ui-imagepicker .image-panel { padding:5px; overflow-x: none; overflow-y: scroll; border: 1px solid #9E9E9E; height: 233px; box-shadow: 0 0 2px #AECFF0 inset; }
 
 .ui-imagepicker .ui-thumb { display: inline-block; margin: 3px; cursor: pointer; border: 1px solid White; -moz-border-radius:3px; -webkit-border-radius: 3px; border-radius: 3px; }
 .ui-imagepicker .ui-thumb.hover { border-color: #B8D6FB; }
@@ -81,22 +81,22 @@ Editor
 
 /* code editor */
 .ui-codeeditor { width: 100%; height: 100%; } 
-.ui-codeeditor .code-details { padding: 30px 20px 20px; position: relative; border-top: 1px solid #DDDDDD; }
-.ui-codeeditor .code-details  button { bottom: 20px; position: absolute; right: 20px; }
+.ui-codeeditor .code-details { padding: 30px 20px 20px; position: relative; border-top: 1px solid #DDDDDD; height: 72px;}
+.ui-codeeditor .code-details  button { bottom: 20px; position: absolute; right: 20px; padding: 8px 25px; margin-right:0; font-size: 13px; font-weight: normal; line-height: 16px; font-family:inherit; }
 
 /* html editor */
 .ui-htmleditor { width: 100%; height: 100%; } 
-.ui-htmleditor .html-view textarea { width: 730px; height: 355px; }
+.ui-htmleditor .html-view textarea { width: 730px; height: 355px; font-family: inherit; }
 .ui-htmleditor .html-details { padding: 20px; position: relative; border-top: 1px solid #DDDDDD; height: 50px; }
-.ui-htmleditor .html-details  button { bottom: 20px; position: absolute; right: 20px; }
+.ui-htmleditor .html-details  button { bottom: 20px; position: absolute; right: 20px; padding: 8px 25px; margin-right:0; font-size: 13px; font-weight: normal; line-height: 16px; font-family:inherit; }
 
 /* link dialog */
 .ui-linkdialog {  width: 100%; height: 100%; }
-.ui-linkdialog .link-details { padding: 20px; position: relative; }
-.ui-linkdialog .link-details button { bottom: 20px; position: absolute; right: 20px; }
+.ui-linkdialog .link-details { padding: 20px; position: relative; height:140px; }
+.ui-linkdialog .link-details button { bottom: 20px; position: absolute; right: 20px; padding: 8px 25px; margin-right:0; font-size: 13px; font-weight: normal; line-height: 16px; font-family:inherit; }
 
 .ui-field.inline { display: inline-block; margin-right: 20px; }
-.ui-field label { color: #333333; display: block; font-size: 13px; padding: 0.8em 0; }
+.ui-field label { color: #333333; display: block; font-size: 13px; padding: 0.8em 0; font-weight: normal; }
 .ui-field input.medium { width: 250px; }
 .ui-field input.long { width: 535px; }
 .ui-field  input, .ui-field  select, .ui-field  textarea { border: 1px solid #9E9E9E; color: #333333;font-family: inherit;font-size: inherit;line-height: 1.4375; margin: 0; padding: 3px 5px; width: 15em;}
