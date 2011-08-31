@@ -31,6 +31,7 @@
 			},
 			createHyperlinkModal: function(area) {
 				// get current select and see if we are in an existing link
+				ko.contenteditable.util.saveSelection();
 				var sel = rangy.getSelection(),
 					range = ko.contenteditable.util.getFirstRange(),
 					$node = sel !== undefined ? $(sel.anchorNode) : undefined, href, title, target;
@@ -68,6 +69,7 @@
 					}, this);
 					
 					this.insert = function() {
+						ko.contenteditable.util.restoreSelection();
 						area.execute('link', [ this.href(), this.title(), this.blankTarget() ]);
 						area.save();
 						this.modal.close();
@@ -79,6 +81,7 @@
 			},
 			createCodeModal: function(area){
 				// get current select and see if we are in an existing code block
+				ko.contenteditable.util.saveSelection();
 				var sel = rangy.getSelection(),
 					range = sel.rangeCount ? sel.getRangeAt(0) : null,
 					$pre = sel !== undefined ? $(sel.anchorNode) : undefined,
@@ -186,11 +189,11 @@
 							newSel.setSingleRange(range);
 							// delete element
 							$(this.element).remove();
-							
-							retore = false;
+						} else {
+							ko.contenteditable.util.restoreSelection();
 						}
 
-						area.execute('code', [language.name, language.mode, language.mime, editor.getValue()], restore);
+						area.execute('code', [language.name, language.mode, language.mime, editor.getValue()]);
 						area.save();
 						this.modal.close();
 					}.bind(this);
@@ -213,7 +216,9 @@
 					}
 				}
 				if ($.IsNullOrWhiteSpace(initialMode)) {
-					viewModel.selectedLanguageName(viewModel.languages()[0].name);
+					if (viewModel.languages().length > 0) {
+						viewModel.selectedLanguageName(viewModel.languages()[0].name);
+					}
 				} else {
 					var langSelected = viewModel.languages().filter(function(x) { return x.name === initialMode; });
 					if (langSelected.length > 0) {
@@ -413,38 +418,33 @@
 		command: {
 			bold: function() {
 				document.execCommand('bold', false, null);
-				this.focus();
 				this.change();
 			},
 			italic: function() {
 				document.execCommand('italic', false, null);
-				this.focus();
 				this.change();
 			},
 			underline: function() {
 				document.execCommand('underline', false, null);
-				this.focus();
 				this.change();
 			},
 			ul: function() {
 				document.execCommand('insertunorderedlist', false, null);
-				this.focus();
+				this.focus(); // needed as we loose focus when applied
 				this.change();
 			},
 			ol: function() {
 				document.execCommand('insertorderedlist', false, null);
-				this.focus();
+				this.focus(); // needed as we loose focus when applied
 				this.change();
 			},
 			paragraph: function() {
 				document.execCommand('formatBlock', false, '<p>');		
-				this.focus();
 				this.change();
 			},
 			heading: function(number) {
 				if (number > 0 && number < 7) {
-					document.execCommand('formatBlock', false, '<H'+ number + '>');
-					this.focus();
+					document.execCommand('formatBlock', false, '<H'+ number + '>');					
 					this.change();
 				}
 			},
@@ -461,22 +461,18 @@
 						document.execCommand('justifyright', false, null);	
 						break;
 				}
-				this.focus();
 				this.change();
 			},
 			subscript: function() {
 				document.execCommand('subscript', false, null);
-				this.focus();
 				this.change();
 			},
 			superscript: function() {
 				document.execCommand('superscript', false, null);
-				this.focus();
 				this.change();
 			},
 			blockquote: function() {
 				document.execCommand('formatBlock', false, '<blockquote>');		
-				this.focus();
 				this.change();
 			},
 			image: function(src, alt, title) {
@@ -569,6 +565,11 @@
 				area.dom().html(html);
 				this.focus();
 				this.change();
+			},
+			removeFormat: function(area) {
+				document.execCommand('removeFormat', false, null);		
+				this.focus();
+				this.change();
 			}
 		}
 	}
@@ -659,10 +660,10 @@
 					// call the editor, here boy!
 					editor.activate(self);
 				})
-				.click(function() {
+				/*.click(function() {
 					// save the selection
 					ko.contenteditable.util.saveSelection();
-				})
+				})*/
 				.dblclick(function() {
 					// get cursor position
 					var sel = rangy.getSelection();
@@ -687,11 +688,10 @@
 				return container;
 			};
 			
-			this.execute = function(commandName, args, restore) {
-				restore = restore || true;
-				if (restore) {
+			this.execute = function(commandName, args) {
+				/*if (restore) {
 					ko.contenteditable.util.restoreSelection();
-				}
+				}*/
 				ko.contenteditable.command[commandName].apply(self, args);
 			};
 		},
@@ -765,7 +765,7 @@
 			}.bind(this);
 			
 			this.runCommand = function(command, args) {
-				if (this.area() !== undefined && savedSel) {
+				if (this.area() !== undefined) {
 					if (typeof command === 'function') {
 						command.apply(this, [ this.area() ].concat(args));
 					} else {
@@ -844,7 +844,8 @@
 						{
 							buttons: [
 								{ name: 'Blockquote', iconClass: 'blockquote', description:'add a blockquote (does not work in IE)', execCmd: 'blockquote' },
-								{ name: 'Image', iconClass: 'image', description:'insert an image', execCmd: ko.contenteditable.actions.createImageModal }
+								{ name: 'Image', iconClass: 'image', description:'insert an image', execCmd: ko.contenteditable.actions.createImageModal },
+								{ name: 'RemoveFormat', iconClass: 'removeFormat', description:'remove formatting from the current selection', execCmd: 'removeFormat' }
 							]
 						}
 					]
