@@ -55,13 +55,16 @@
         /// group: selector for zIndex elements to find max for
         /// </param>
         /// <returns type="jQuery" />
-        var def = { inc: 10, group: "*" },
+        var def = { inc: 10, group: "*", min: 0 },
 		zmax = 0;
         $.extend(def, opt);
         $(def.group).each(function (index, el) {
             var cur = parseInt(Number($(el).css('z-index')), 10);
             zmax = cur > zmax ? cur : zmax;
         });
+		if (def.min > 0 && def.min > zmax) {
+			zmax = def.min;
+		}
         if (!this.jquery) {
             return zmax;
         }

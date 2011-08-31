@@ -188,12 +188,16 @@
 				dragOptions = {
 					addClasses: false,
 					handle : '.title-bar',
-					stack: ".ui-window-stack",
+					/*stack: ".ui-window-stack",*/
 					scroll : false,
 					stop : function (e, ui) { 
 						viewModel.position(ui.offset.left + ',' + ui.offset.top);
 						// save position and state in cookie
 						viewModel.saveState();
+						$(this).maxZIndex({ group : '.ui-window-stack', inc : 1, min: 100000}); 
+					},
+					drag: function(event, ui) {
+						$(this).maxZIndex({ group : '.ui-window-stack', inc : 1, min: 100000});
 					},
 					create: function(event, ui) { 
 						// set pinned status
@@ -204,8 +208,8 @@
 				};
 			// bind events
 			$element.draggable(dragOptions).bind('mousedown', function () { 
-					$(this).maxZIndex({ group : '.' + viewModel.cssClass(), inc : 1}); 
-				});
+					$(this).maxZIndex({ group : '.ui-window-stack', inc : 1, min: 100000}); 
+			});
 			
 			$element.css({'position' : 'absolute', 'top': viewModel.top(), 'left' : viewModel.left() });
 		},
