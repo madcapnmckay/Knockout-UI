@@ -45,6 +45,7 @@ Editor
 .ep-editor .button .html { background-image: url('../images/html.png'); }
 .ep-editor .button .cancel { background-image: url('../images/cross-button.png'); }
 .ep-editor .button .confirm { background-image: url('../images/tick-button.png'); }
+.ep-editor .button .removeFormat { background-image: url('../images/format-minus.png'); }
 
 
 .ep-editor .button .menu { padding:0; margin:0; list-style-type: none; display: none; position: absolute; border: solid 1px #AABCD5; background-color: #E7F1FB; background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F5FAFF), to(#DCE7F6)); background-image: -moz-linear-gradient(top,  #F5FAFF,  #DCE7F6); }
@@ -63,9 +64,9 @@ Editor
 
 /*image picker */
 .ui-imagepicker  { width: 100%; height: 100%; } 
-.ui-imagepicker .image-details { padding: 20px; position: relative; }
+.ui-imagepicker .image-details { padding: 0 20px 20px; position: relative; }
 .ui-imagepicker .image-details  button { bottom: 20px; position: absolute; right: 20px; }
-.ui-imagepicker .image-list { padding: 20px 20px 0; height: 247px; position: relative; }
+.ui-imagepicker .image-list { padding: 20px 20px 0; position: relative; }
 .ui-imagepicker .image-panel { padding:5px; overflow-x: none; overflow-y: scroll; border: 1px solid #9E9E9E; height: 233px; box-shadow: 0 0 2px #AECFF0 inset; }
 
 .ui-imagepicker .ui-thumb { display: inline-block; margin: 3px; cursor: pointer; border: 1px solid White; -moz-border-radius:3px; -webkit-border-radius: 3px; border-radius: 3px; }
@@ -80,7 +81,7 @@ Editor
 .ui-imagepicker  .loading .loading-icon { display: block; }
 
 /* code editor */
-.ui-codeeditor { width: 100%; height: 100%; } 
+.ui-codeeditor { width: 100%; height: 100%; color: Black; } 
 .ui-codeeditor .code-details { padding: 30px 20px 20px; position: relative; border-top: 1px solid #DDDDDD; height: 72px;}
 .ui-codeeditor .code-details  button { bottom: 20px; position: absolute; right: 20px; padding: 8px 25px; margin-right:0; font-size: 13px; font-weight: normal; line-height: 16px; font-family:inherit; }
 
