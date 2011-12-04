@@ -239,8 +239,19 @@
 				});
 			}.bind(this);
 			
-			this.doubleClick = function () {
+			this.doubleClick = function (event) {
 				viewModel.handlers.doubleClick(this);
+			}.bind(this);
+			
+			this.clicked = function(event) {
+				switch (event.which) {
+					case 1:
+						this.selectNode();
+						break;
+					case 3:
+						viewModel.handlers.rightClick(this);
+						break;
+				}
 			}.bind(this);
 			
 			this.toggleFolder = function () {
@@ -299,6 +310,9 @@
 				},
 				doubleClick : function (node) {
 					logger('doubled clicked ' + node.name(), configuration.logTo); 
+				},
+				rightClick : function (node) {
+					logger('right click ' + node.name(), configuration.logTo); 
 				},
 				startDrag : function (node) { 
 					logger('start drag', configuration.logTo); 
@@ -394,7 +408,7 @@
 					{{else}}\
 						<li class=\"${cssClass}\" data-bind=\"css: { empty: !hasChildren(), open: isOpen, rename: isRenaming }\" data-id=\"${ id() }\">\
 					{{/if}}\
-						<div class=\"node\" data-bind=\"nodeDrag : isDraggable(), nodeDrop: { active : isDropTarget(), onDropComplete: move }, css :{ selected: isSelected }, click: selectNode, hover : 'hover', event : { dblclick : doubleClick }\">\
+						<div class=\"node\" data-bind=\"nodeDrag : isDraggable(), nodeDrop: { active : isDropTarget(), onDropComplete: move }, css :{ selected: isSelected }, hover : 'hover', event : { dblclick : doubleClick, mousedown: clicked }\">\
 							{{if hasChildren() }}\
 								<span class=\"handle\" data-bind=\"click: toggleFolder, bubble : false, style: { marginLeft: indent() }, hover : 'hover'\"></span>{{else}}<span class=\"handle\" data-bind=\"style: { marginLeft: indent() }\"></span>{{/if}}<span class=\"icon\"></span><label data-bind=\"visible: !isRenaming()\" unselectable=\"on\">${ name }</label><input class=\"rename\" type=\"text\" data-bind=\"nodeRename: name, onRenameComplete : rename, nodeSelectVisible: isRenaming\"/>\
 						</div>\
