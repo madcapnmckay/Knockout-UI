@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>Knockout UI - Dialog Binding</title>
+	<link rel="stylesheet" href="css/reset.css" type="text/css"/>
+	<link rel="stylesheet" href="css/style.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shCore.css" type="text/css"/>
+	<link rel="stylesheet" href="css/shThemeDefault.css" type="text/css"/>
+
+	
+	<!-- Dependencies -->
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.core.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.widget.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.position.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.ui.dialog.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
+	<script type="text/javascript" src="../lib/knockout-1.2.1.min.js"></script>
+	
+    <script type="text/javascript" src="js/shCore.js"></script>
+	<script type="text/javascript" src="js/shBrushXml.js"></script>
+	<script type="text/javascript" src="js/shBrushJScript.js"></script>
+	
+	<link rel="stylesheet" href="../css/ui-dialog.css" type="text/css"/>
+	<script type="text/javascript" src="../js/ui-dialog.js"></script>	
+</head>
+<body>
+	<div class="central-column">
+		<h1>Dialog Binding</h1>
+		<p>The Dialog binding allows you manage jQuery UI Dialogs from a view model. jQuery UI Dialog is a floating window that contains a title bar and a content area.<p>
+		<p>Please refer to the <a href="http://jqueryui.com/demos/dialog/">jquery ui documentation</a> for further details </p>
+		<h2>Usage</h2>
+		<h3>Markup</h3>
+		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
+			<label>
+				Country (type some text)</label>
+			<input type="text" data-bind="autocomplete : autocompleteConfig" />
+		]]></script>
+		<h3>Javascript</h3>
+		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
+			var countriesViewModel = function() {
+				this.source = ['France', 'Germany', 'Spain', 'USA', 'United Kingdom', 'Canada', 'Mexico', 'China', 'Brazil', 'India', 'Thailand', 'Turkey'];
+
+				this.autocompleteConfig = function() {
+					return this;
+				}.bind(this);
+			};
+			
+			ko.applyBindings(countriesViewModel);
+		]]></script>
+		<h3>Results</h3>
+		<div id="mode1example" class="results">
+            <div title="The Dialog" data-bind="dialog: isDialogVisible">
+                This is sample dialog managed by view model.
+            </div>
+            <label data-bind="text: isDialogVisible() ? 'Dialog is visible' : 'Dialog is not visible'"></label>
+			<button data-bind="click: onShowDialogClick, enable: isDialogVisible() == false">Show dialog</button>
+			<button data-bind="click: onHideDialogClick, enable: isDialogVisible">Hide dialog</button>
+		</div>
+		<h3>Dependencies</h3>
+		<ul class="dependencies">
+			<li>Knockout 1.2.0</li>
+			<li>Jquery 1.6+</li>
+			<li>Jquery tmpl</li>
+			<li>Jquery UI Core</li>
+			<li>Jquery UI Widget</li>
+			<li>Jquery UI Position</li>
+			<li>Jquery UI Dialog</li>
+		</ul>
+		<div class="footer">
+			<ul>
+				<li>License: <a href="http://www.opensource.org/licenses/mit-license.php">MIT http://www.opensource.org/licenses/mit-license.php</a></li>
+				<li>Project Home: <a href="https://github.com/madcapnmckay/Knockout-UI">https://github.com/madcapnmckay/Knockout-UI</a></li>
+			</ul>
+		</div>
+	</div>
+	<script type="text/javascript">
+	    var dialogViewModel = function () {
+	        var self = this;
+
+	        self.isDialogVisible = ko.observable(true);
+
+	        self.onShowDialogClick = function () {
+	            self.isDialogVisible(true);
+	        };
+
+	        self.onHideDialogClick = function () {
+	            self.isDialogVisible(false);
+	        };
+	    };
+		
+		$(function () {
+			SyntaxHighlighter.all();
+
+			ko.applyBindings(new dialogViewModel());
+		});
+	</script>
+</body>
+</html>
