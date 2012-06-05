@@ -15,9 +15,9 @@
 	<script type="text/javascript" src="../lib/jquery.ui.position.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.ui.dialog.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
-	<script type="text/javascript" src="../lib/knockout-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../lib/knockout-2.1.0.min.js"></script>
 	
-    <script type="text/javascript" src="js/shCore.js"></script>
+	<script type="text/javascript" src="js/shCore.js"></script>
 	<script type="text/javascript" src="js/shBrushXml.js"></script>
 	<script type="text/javascript" src="js/shBrushJScript.js"></script>
 	
@@ -32,34 +32,70 @@
 		<h2>Usage</h2>
 		<h3>Markup</h3>
 		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
-			<label>
-				Country (type some text)</label>
-			<input type="text" data-bind="autocomplete : autocompleteConfig" />
-		]]></script>
+			<div title="The Dialog" data-bind="dialog: isDialogVisible">
+				This is sample dialog managed by view model.
+			</div>
+
+			<button data-bind="click: onShowDialogClick">Show dialog</button>
+			<button data-bind="click: onHideDialogClick">Hide dialog</button>]]></script>
 		<h3>Javascript</h3>
 		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
-			var countriesViewModel = function() {
-				this.source = ['France', 'Germany', 'Spain', 'USA', 'United Kingdom', 'Canada', 'Mexico', 'China', 'Brazil', 'India', 'Thailand', 'Turkey'];
+		var dialogViewModel = function () {
+			var self = this;
 
-				this.autocompleteConfig = function() {
-					return this;
-				}.bind(this);
+			self.isDialogVisible = ko.observable(false);
+
+			self.onShowDialogClick = function () {
+				self.isDialogVisible(true);
 			};
-			
-			ko.applyBindings(countriesViewModel);
-		]]></script>
+
+			self.onHideDialogClick = function () {
+				self.isDialogVisible(false);
+			};
+		};
+		
+		$(function () {
+			ko.applyBindings(new dialogViewModel());
+		});]]></script>
+		<h2>Dialog options</h2>
+		<h3>Javascript</h3>
+		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
+		var dialogViewModel = function () {
+			var self = this;
+
+			self.isDialogVisible = ko.observable(false)
+				.extend({
+					jqueryUiOptions: {
+						width: 500,
+						height: 500
+					}
+				});
+
+			self.onShowDialogClick = function () {
+				self.isDialogVisible(true);
+			};
+
+			self.onHideDialogClick = function () {
+				self.isDialogVisible(false);
+			};
+		};
+		
+		$(function () {
+			ko.applyBindings(new dialogViewModel());
+		});]]></script>
+		<p>All options description available on <a href="http://jqueryui.com/demos/dialog/#options">jQuery UI Dialog documentation</a>.</p>
 		<h3>Results</h3>
 		<div id="mode1example" class="results">
-            <div title="The Dialog" data-bind="dialog: isDialogVisible">
-                This is sample dialog managed by view model.
-            </div>
-            <label data-bind="text: isDialogVisible() ? 'Dialog is visible' : 'Dialog is not visible'"></label>
+			<div title="The Dialog" class="ui-dialog" data-bind="dialog: isDialogVisible">
+				This is sample dialog managed by view model.
+			</div>
+			<label data-bind="text: isDialogVisible() ? 'Dialog is visible' : 'Dialog is not visible'"></label>
 			<button data-bind="click: onShowDialogClick, enable: isDialogVisible() == false">Show dialog</button>
 			<button data-bind="click: onHideDialogClick, enable: isDialogVisible">Hide dialog</button>
 		</div>
 		<h3>Dependencies</h3>
 		<ul class="dependencies">
-			<li>Knockout 1.2.0</li>
+			<li>Knockout 2.1.0</li>
 			<li>Jquery 1.6+</li>
 			<li>Jquery tmpl</li>
 			<li>Jquery UI Core</li>
@@ -75,19 +111,25 @@
 		</div>
 	</div>
 	<script type="text/javascript">
-	    var dialogViewModel = function () {
-	        var self = this;
+		var dialogViewModel = function () {
+			var self = this;
 
-	        self.isDialogVisible = ko.observable(true);
+			self.isDialogVisible = ko.observable(false)
+				.extend({
+					jqueryUiOptions: {
+						width: 500,
+						height: 500
+					}
+				});
 
-	        self.onShowDialogClick = function () {
-	            self.isDialogVisible(true);
-	        };
+			self.onShowDialogClick = function () {
+				self.isDialogVisible(true);
+			};
 
-	        self.onHideDialogClick = function () {
-	            self.isDialogVisible(false);
-	        };
-	    };
+			self.onHideDialogClick = function () {
+				self.isDialogVisible(false);
+			};
+		};
 		
 		$(function () {
 			SyntaxHighlighter.all();
