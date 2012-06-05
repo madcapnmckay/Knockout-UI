@@ -18,6 +18,7 @@ Included :
 * Window Manager
 * Tabs
 * Editor - This is an experimental contenteditable rich text editor, and is designed only for the latest browsers.
+* Dialog
 
 In the pipeline :
 -----------------
