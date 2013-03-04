@@ -1,0 +1,29 @@
+{
+  "name": "Knockout-UI",
+  "version": "0.5.0",
+  "description": "A home for rich UI components based on KnockoutJS",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/madcapnmckay/Knockout-UI.git"
+  },
+  "keywords": [
+    "KnockoutJS"
+  ],
+  "bugs": "https://github.com/madcapnmckay/Knockout-UI/issues",
+  "author": "Ian Mckay",
+  "license": "MIT (http://opensource.org/licenses/mit-license.php)",
+  "readmeFilename": "README.md",
+  "gitHead": "7e27b3e586e4a3090822415abbe45f520af1639e",
+  "devDependencies": {
+    "grunt": "~0.4.0",
+    "grunt-contrib-jshint": "~0.2.0",
+    "grunt-contrib-uglify": "~0.1.2"
+  }
+}
