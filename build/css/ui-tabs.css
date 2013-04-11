@@ -1,0 +1,18 @@
+/*!
+ * Knockout-UI v0.5.0
+ * A home for rich UI components based on KnockoutJS
+ * Copyright (c) 2013 Ian Mckay
+ * https://github.com/madcapnmckay/Knockout-UI.git
+ * License: MIT (http://opensource.org/licenses/mit-license.php)
+**/
+.ui-tabcontainer, .ui-tabs { height:100%; font-size: 12px; }
+.ui-tabs .tab-strip { border-bottom: 1px solid #CDDAEA; }
+.ui-tabs .inner-strip { border: 1px solid #E4EFFB; background-color: #E7F1FB; overflow: hidden; padding: 3px; 
+background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F5FAFF), to(#DCE7F6)); background-image: -moz-linear-gradient(top,  #F5FAFF,  #DCE7F6); }
+.ui-tabs .tab  { float: left; cursor: pointer; margin-right: 2px; -webkit-user-select:none; -moz-user-select:none; user-select: none; }
+.ui-tabs .inner-tab { padding: 8px 10px; display: inline-block; }
+.ui-tabs .tab.tab-hover, .ui-tabs .tab.tab-active { border: 1px solid #AABCD5;  }
+.ui-tabs .tab.tab-hover .inner-tab, .ui-tabs .tab.tab-active .inner-tab { border: 1px solid #EFF4F9; background-color: #E7F1FB; padding: 6px 8px; 
+background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#F7FBFE), to(#C3D5EA)); background-image: -moz-linear-gradient(top,  #F7FBFE,  #C3D5EA); }
+.ui-tabs .tab.tab-hover, .ui-tabs .tab.tab-hover .inner-tab, .ui-tabs .tab.tab-active, .ui-tabs .tab.tab-active .inner-tab { -moz-border-radius:2px 2px 2px 2px; -webkit-border-radius: 2px; border-radius: 2px; }
+.ui-tabs .tab-body { border-top: 1px solid #A0AFC3; height: 423px; /* ui-tabs - tab-strip */ }

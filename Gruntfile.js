@@ -3,41 +3,85 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    uglify: {
+    banner: '/*!\n * <%= pkg.name %> v<%= pkg.version %>\n * <%= pkg.description %>\n * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author %>\n * <%= pkg.repository.url %>\n * License: <%= pkg.license %>\n**/',
+
+    clean: ["build/"],
+
+    concat: {
       options: {
-        banner: '/*! <%= pkg.name %> - <%= pkg.description %> Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author %> */\n'
+        banner: '<%= banner %>\n',
+        stripBanners: true
       },
+      js: {
+        files: [
+          {
+            expand: true,           // Enable dynamic expansion.
+            cwd: 'src/js/',         // Src matches are relative to this path.
+            src: ['**/*.js'],       // Actual pattern(s) to match.
+            dest: 'build/js/',      // Destination path prefix.
+            ext: '.js'              // Dest filepaths will have this extension.
+          }
+        ]
+      },
+      css: {
+        files: [
+          {
+            expand: true,            // Enable dynamic expansion.
+            cwd: 'src/css/',         // Src matches are relative to this path.
+            src: ['**/*.css'],       // Actual pattern(s) to match.
+            dest: 'build/css/',      // Destination path prefix.
+            ext: '.css'              // Dest filepaths will have this extension.
+          }
+        ]
+      }
+    },
+
+    uglify: {
       min: {
-        files: {
-          'build/js/ui-tree.min.js': ['src/js/ui-tree.js'],
-          'build/js/ui-tabs.min.js': ['src/js/ui-tabs.js'],
-          'build/js/ui-util.min.js': ['src/js/ui-util.js'],
-          //'build/js/ui-dialog.min.js': ['src/js/ui-dialog.js'],
-          'build/js/ui-dropdown.min.js': ['src/js/ui-dropdown.js'],
-          'build/js/ui-autocomplete.min.js': ['src/js/ui-autocomplete.js']
-        }
-      },
-      build: {
         options: {
-          mangle: false,
-          compress: false
+          banner: '<%= banner %>\n'
         },
-        files: {
-          'build/js/ui-tree.js': ['src/js/ui-tree.js'],
-          'build/js/ui-tabs.js': ['src/js/ui-tabs.js'],
-          'build/js/ui-util.js': ['src/js/ui-util.js'],
-          //'build/js/ui-dialog.js': ['src/js/ui-dialog.js'],
-          'build/js/ui-dropdown.js': ['src/js/ui-dropdown.js'],
-          'build/js/ui-autocomplete.js': ['src/js/ui-autocomplete.js']
-        }
+        files: [
+          {
+            expand: true,               // Enable dynamic expansion.
+            cwd: 'src/js/',             // Src matches are relative to this path.
+            src: ['**/*.js'],           // Actual pattern(s) to match.
+            dest: 'build/js/minified/',  // Destination path prefix.
+            ext: '.min.js'              // Dest filepaths will have this extension.
+          }
+        ]
+      }
+    },
+
+    cssmin: {
+      options: {
+        banner: '<%= banner %>'
+      },
+      minify: {
+        expand: true,
+        cwd: 'src/css/',
+        src: ['*.css', '!*.min.css'],
+        dest: 'build/css/minified/',
+        ext: '.min.css'
       }
     }
+
   });
 
   // Load the plugin that provides the "uglify" task.
+  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
+  grunt.loadNpmTasks('grunt-contrib-clean');
 
   // Default task(s).
-  grunt.registerTask('default', ['uglify:min', 'uglify:build']);
+  grunt.registerTask('default', [
+    'clean',
+    'concat:js',
+    'concat:css',
+    'uglify:min',
+    'cssmin'
+  ]);
 
 };
