@@ -64,6 +64,19 @@ module.exports = function(grunt) {
         dest: 'build/css/minified/',
         ext: '.min.css'
       }
+    },
+
+    jshint: {
+      options: {
+        evil: true,
+        regexdash: true,
+        browser: true,
+        wsh: true,
+        trailing: true,
+        sub: true,
+        white : false
+      },
+      all: ['src/js/*.js']
     }
 
   });
@@ -74,9 +87,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // Default task(s).
   grunt.registerTask('default', [
+    'jshint:all',
     'clean',
     'concat:js',
     'concat:css',

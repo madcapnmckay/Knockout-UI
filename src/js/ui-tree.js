@@ -1,546 +1,560 @@
-/*global document, window, $, ko, debug, setTimeout, alert */
-/*
- * Knockout UI Tree
- * 
- * Copyright (c) 2011 Ian Mckay
- *
- * https://github.com/madcapnmckay/Knockout-UI
- *
- * License: MIT http://www.opensource.org/licenses/mit-license.php
- *
- */
-(function () {
-    // Private function
-    var logger = function (log, logTo) {
-			if (typeof debug !== 'undefined') {	
-				$('<div></div>').appendTo(logTo || '#log').text(new Date().toGMTString() + ' : ui-tree.js - '  + log);
+(function(factory) {
+
+    //CommonJS
+    if (typeof require === "function" && typeof exports === "object" && typeof module === "object") {
+        factory(require("knockout"), require("jquery"), require("ui-core"), exports);
+    //AMD
+    } else if (typeof define === "function" && define.amd) {
+        define(["knockout", "jquery", "ui-core", "exports"], factory);
+    //normal script tag
+    } else {
+		ko.ui = "undefined" === typeof ko.ui ? { core: {} } : ko.ui;
+        factory(ko, $, ko.ui.core, ko.ui);
+    }
+}(function(ko, $, core, exports) {
+	"use strict";
+
+	var defaults,
+		ITEMKEY = "ko_dragItem"
+	;
+
+	ko.addTemplate(
+		"tmpl_ui_tree_node",
+		[
+			"<li>",
+				"<div data-bind='UITreeNode: $data'>",
+					"<span data-bind='UITreeNodeHandle: {}'></span>",
+					"<span data-bind='UITreeNodeIcon: {}'></span>",
+					"<label data-bind='UITreeNodeLabel: {}'></label>",
+					"<input type='text' data-bind='UITreeNodeTextBox: {}' />",
+				"</div>",
+				"<ul data-bind='template: { name: 'tmpl_ui_tree_node', foreach: nodes }, visible: open'></ul>",
+			"</li>"
+		].join("")
+	);
+
+	ko.addTemplate(
+		"tmpl_ui_tree",
+		"<ul data-bind='template: { name: 'tmpl_ui_tree_node', foreach: nodes }, attr: { class: options.css.tree }'></ul>"
+	);
+
+	exports.defaults = exports.defaults || {};
+
+	defaults = exports.defaults.tree = {
+		templates: {
+			tree: "tmpl_ui_tree",
+			node: "tmpl_ui_tree_node"
+		},
+		css: {
+			tree: "ui-tree",
+			icon: "ui-icon",
+			handle: "ui-handle",
+			emptyHandle: "ui-no-child",
+			node: "ui-node",
+			selected: "ui-selected",
+			open: "open"
+		},
+		node: {
+			indent: 16,
+			title: "New Folder",
+			childType: "folder",
+			draggable: true,
+			droppable: true
+		},
+		events: {
+			click: "click",
+			context: "context",
+			dblClick: "dblClick",
+			added: "added",
+			toggle: "toggle",
+			edit: "edit",
+			renamed: "renamed",
+			removed: "removed",
+			moved: "moved"
+		},
+		draggable: {
+			addClasses: false,
+			appendTo: "body",
+			revertDuration: 250,
+			connectToSortable: false,
+			dragCursorAt: { left: 28, bottom: 0 },
+			dragCursor: "auto",
+			distance: 10,
+			zIndex: 200000,
+			helper: function(event, element, css) {
+				return $('<div></div>').addClass("drag-icon")
+						.append($('<span></span>')
+							.addClass(css));
 			}
 		},
-		templateEngine = new ko.jqueryTmplTemplateEngine(),
-		typeValueOrDefault = function (param, type, viewModel) {
-			var globalDefault = viewModel.defaults[param];
-			if (viewModel.defaults[type] === undefined || viewModel.defaults[type][param] === undefined) {
-				return ko.utils.unwrapObservable(globalDefault);		
-			}
-			
-			return ko.utils.unwrapObservable(viewModel.defaults[type][param]);
-		},
-		Node = function (data, parent, viewModel) {
-			this.viewModel = viewModel;
-			this.parent = ko.observable(parent);
-			this.id = ko.observable(data.id);
-			this.name = ko.observable(data.name);
-			this.contextMenu = viewModel.contextMenu;
-			// defaults
-			this.cssClass = ko.observable(data.cssClass || 'folder');
-			this.isRenaming = ko.observable(false);
-			
-			this.type = ko.observable(data.type || this.cssClass());	
-			// a placeholder for additional custom data
-			this.contents = data.contents;
-			
-			this.level = ko.dependentObservable(function () {
-				try {
-					var pname = this.parent().name(),
-						plevel = this.parent().level();
-					return this.parent().level() + 1; 
-				} catch (err) { 
-					return 0; 
-				}
-			}, this);
-			
-			// assign the childrens parent
-			var self = this, vm = this.viewModel, openSelfAndParents, i;
-			this.children = ko.observableArray([]);
-			if (data.children !== undefined) {
-				for (i = 0; i < data.children.length; i += 1) {
-					if (data.children[i] !== undefined) {
-						this.children.push(new Node(data.children[i], self, vm));
-					}
-				}
-			}
-
-			this.unqiueIdentifier = function () {
-				return this.viewModel.id() + this.type() + this.id();
-			};
-			
-			// load open status from cookie
-			this.isOpen = ko.observable(false);
-			var savedOpen = $.cookie(this.unqiueIdentifier() + 'open');
-			if (savedOpen !== null) {
-				this.isOpen(savedOpen === 'true');
-			} else if (data.isOpen !== undefined) {
-				this.isOpen(data.isOpen);
-			}
-			
-			this.saveState = function () {
-				if ($.cookie === undefined && this.viewModel.remember()) {
-					alert('You must include $.cookie in order to use this feature');
-				} else if (this.viewModel.remember()) {	
-					$.cookie(this.unqiueIdentifier() + 'open', this.isOpen()); 
-					if (this.isSelected()) {
-						$.cookie(this.viewModel.id() + 'active', this.unqiueIdentifier()); 
-					}
-				}
-			};
-			
-			this.selectNode = function () {
-				var selected = this.viewModel.selectedNode(), that = this;
-				
-				if (selected !== undefined && selected.isRenaming()) {
-					$('.rename > .node input', viewModel.tree).blur();
-				}
-				this.saveState();
-							
-				if (selected === undefined || (selected !== undefined && selected !== this)) {
-				
-					that.viewModel.handlers.selectNode(this, function () {
-						if (selected !== undefined) {
-							selected.isSelected(false);
-							selected.isRenaming(false);
-						}
-						that.isSelected(true);
-						that.viewModel.selectedNode(that);
-						that.saveState();
-					});
-				}
-			}.bind(this);
-			
-			// load selected state from cookie
-			this.isSelected = ko.observable(false);
-			var savedActive = $.cookie(this.viewModel.id() + 'active');
-			if ((savedActive !== null && savedActive === this.unqiueIdentifier()) || data.isSelected) {
-				this.selectNode();
-			} 
-
-			this.canAddChildren = ko.dependentObservable(function () {
-				var typeDefault = typeValueOrDefault('canAddChildren', this.type(), this.viewModel);
-				return typeDefault;
-			}, this);
-			
-			this.isDropTarget = ko.dependentObservable(function () {
-				var typeDefault = typeValueOrDefault('isDropTarget', this.type(), this.viewModel);
-
-				return typeDefault;
-			}, this);
-			
-			this.connectToSortable = ko.dependentObservable(function () {
-				var typeDefault = typeValueOrDefault('connectToSortable', this.type(), this.viewModel);
-
-				return typeDefault;
-			}, this);
-			
-			this.isDraggable = ko.dependentObservable(function () {
-				var name = this.name(),
-					childRenaming = false,
-					typeDefault = typeValueOrDefault('isDraggable', this.type(), this.viewModel);
-				
-				$.each(this.children(), function (index, child) {
-					childRenaming = child.isRenaming();
-					if (childRenaming) {
-						return false;
-					}
-				});
-				return !this.isRenaming() && !childRenaming && typeDefault;
-			}, this);
-			
-			this.hasChildren = function () {
-				return this.children().length > 0;
-			}.bind(this);
-			
-			this.hasContext = function () {
-				return this.contextMenu !== undefined;
-			}.bind(this);
-			
-			this.isdragHolder = function (event, element) {
-				viewModel.dragHolder(this);
-			}.bind(this);
-			
-			this.dropped = function () {
-				return viewModel.dragHolder();
-			}.bind(this);
-			
-			openSelfAndParents = function (node) {
-				var current = node;
-				do { 
-					current.isOpen(true);
-					current = current.parent();
-				} while (current.parent !== undefined);
-			};
-			
-			this.addChild = function (options) {
-				if (this.canAddChildren()) {
-					var defaultType = typeValueOrDefault('childType', this.type(), this.viewModel),
-						type = options.type !== undefined ? options.type : defaultType,
-						defaultName = typeValueOrDefault('name', type, this.viewModel),
-						name = options.name !== undefined ? options.name : defaultName,
-						rename = options.rename !== undefined ? options.rename : typeValueOrDefault('renameAfterAdd', type, this.viewModel);
-				
-					// the addNode handler must return an id for the new node
-					var that = this;
-					viewModel.handlers.addNode(this, type, name, function (data) {
-						if (data !== undefined) {
-							var newNode = new Node(data, self, that.viewModel);
-							that.children.push(newNode);				
-							openSelfAndParents(that);
-							that.isSelected(false);
-							newNode.selectNode();
-							if (rename) {
-								newNode.isRenaming(true);
-							}
-							
-							viewModel.recalculateSizes();
-							that.saveState();
-						}
-					});
-				}
-			}.bind(this);
-			
-			this.setViewModel = function (viewModel) {
-				var i;
-				for (i = 0; i < this.children().length; i += 1) {
-					var child = this.children()[i].setViewModel(viewModel);
-				}
-				this.viewModel = viewModel;
-				this.contextMenu = viewModel.contextMenu;
-			}.bind(this);
-			
-			this.deleteSelf = function (action) {
-				var that = this;
-				viewModel.handlers.deleteNode(this, action, function () {
-					$.each(that.children(), function (idx, child) { 
-						child.deleteSelf(action); 
-					});
-					if (that.parent() !== undefined) {
-						that.parent().children.remove(that);
-					}
-					viewModel.recalculateSizes();
-				});
-			}.bind(this);
-			
-			this.rename = function (newName) {
-				var that = this;
-				viewModel.handlers.renameNode(this, this.name(), newName, function () {
-					that.name(newName);
-					viewModel.recalculateSizes();
-				});
-			}.bind(this);
-			
-			this.move = function (node) {
-				var that = this;
-				viewModel.handlers.moveNode(node, this, function () {
-					node.parent().children.remove(node);
-					node.parent(that);
-					that.children.push(node);
-					that.isOpen(true);
-					node.selectNode();
-					viewModel.recalculateSizes();
-					that.saveState();
-				});
-			}.bind(this);
-			
-			this.doubleClick = function (event) {
-				viewModel.handlers.doubleClick(this);
-			}.bind(this);
-			
-			this.clicked = function(event) {
-				switch (event.which) {
-					case 1:
-						this.selectNode();
-						break;
-					case 3:
-						viewModel.handlers.rightClick(this);
-						break;
-				}
-			}.bind(this);
-			
-			this.toggleFolder = function () {
-				this.isOpen(!this.isOpen());
-				viewModel.recalculateSizes();
-				this.saveState();
-			}.bind(this);
-			
-			this.indent = function () {
-				return (this.level() * 11) + 'px';
-			}.bind(this);
-		};
-	
-    ko.tree = {
-        // Defines a view model class you can use to populate a grid
-        viewModel: function (configuration) {
-			this.selectedNode = ko.observable(undefined);
-			
-			// default behaviours for the nodes
-			this.defaults = {
-				isDraggable : true,
-				isDropTarget : true,
-				canAddChildren : true,
-				childType : 'folder',
-				renameAfterAdd : true,
-				connectToSortable : false,
-				dragCursorAt: { left: 28, bottom: 0 },
-				dragCursor : 'auto',
-				dragHelper : function (event, element) { 
-					return $('<div></div>').addClass("drag-icon").append($('<span></span>').addClass(this.cssClass())); 
-				}
-			};
-			
-			// handlers that can be overridden to implement custom functionality
-			this.handlers = {
-				selectNode : function (node, onSuccess) {
-					logger('select node ' + node.name(), configuration.logTo); 
-					onSuccess();
-				},
-				addNode : function (parent, type, name, onSuccess) { 
-					logger('add new node ', configuration.logTo); 
-					// create node data to pass back
-					onSuccess({ id: 10, parent: parent, name: name }); 
-				},
-				renameNode : function (node, from, to, onSuccess) { 
-					logger('rename node "' + from + '" to "' + to + '"', configuration.logTo); 
-					onSuccess(); 
-				},
-				deleteNode : function (node, action, onSuccess) { 
-					logger('delete node "' + node.name() + '"', configuration.logTo); 
-					onSuccess(); 
-				},
-				moveNode :  function (node, newParent, onSuccess) { 
-					logger('move node "' + node.name() + '" to "' + newParent.name() + '"', configuration.logTo); 
-					onSuccess(); 
-				},
-				doubleClick : function (node) {
-					logger('doubled clicked ' + node.name(), configuration.logTo); 
-				},
-				rightClick : function (node) {
-					logger('right click ' + node.name(), configuration.logTo); 
-				},
-				startDrag : function (node) { 
-					logger('start drag', configuration.logTo); 
-				},
-				endDrag : function (node) { 
-					logger('stop drag', configuration.logTo); 
-				}
-			};
-			$.extend(this.handlers, configuration.handlers || {});
-			
-			
-			if (configuration.defaults) {
-				$.extend(true, this.defaults, configuration.defaults);
-			}
-			this.id = ko.observable(configuration.id);
-			this.remember = ko.observable(configuration.remember || false);		
-			this.logTo = configuration.logTo;			
-			var self = this;
-			if (configuration.contextMenu) {
-				this.contextMenu = new ko.contextMenu.viewModel(configuration.contextMenu);
-			}
-			this.children = ko.observableArray([]);
-			var i;
-			for (i = 0; i < configuration.children.length; i += 1) {
-				var child = configuration.children[i];
-				this.children.push(new Node(child, self, self));
-			}			
-			this.tree = undefined;
-			this.dragHolder = configuration.dragHolder || ko.observable(undefined);
-			this.recalculateSizes = function () {
-				var maxNodeWidth = 0, widestNode;
-				$('.node:visible', this.tree).each(function (ind1, node) {
-					var newWidth = 0, $this = $(node);
-					newWidth = newWidth + $this.children('label').outerWidth(true);
-					newWidth = newWidth + $this.children('.icon').outerWidth(true);
-					newWidth = newWidth + $this.children('.handle').outerWidth(true);
-					
-					if (maxNodeWidth < newWidth) {
-						maxNodeWidth = newWidth;
-						widestNode = $this;
-					}
-				});
-				$('.node', this.tree).css('minWidth', maxNodeWidth + 5);
-			}.bind(this);
-			this.addNode = function (options) {
-				if (options instanceof Node) {
-					// if you add a full blown node we do not call the handler to create a new node simply add to the tree
-					options.isSelected(false);
-					options.setViewModel(self);
-					options.parent(self);
-					self.children.push(options);
-					options.selectNode();
-				} else {			
-					if ((options !== undefined && options.parent === undefined) || this.children().length === 0) { 
-						// add to root
-						var type = options.type !== undefined ? options.type : typeValueOrDefault('childType', undefined, this),
-							name = options.name !== undefined ? options.name : typeValueOrDefault('name', type, this),
-							rename = options.rename !== undefined ? options.rename : typeValueOrDefault('renameAfterAdd', type, this);
-							
-						this.handlers.addNode(undefined, type, name, function (data) {
-							if (data !== undefined) {
-								var newNode = new Node(data, self, self);
-								self.children.push(newNode);				
-								newNode.selectNode();
-								if (rename) {
-									newNode.isRenaming(true);
-								}
-								self.recalculateSizes();
-								newNode.saveState();
-							}
-						});
-					} else {
-						this.selectedNode().addChild(options || {});
-					}
-				}
-			}.bind(this);
-			this.deleteNode = function (action) {
-				if (this.selectedNode() !== undefined) {
-					this.selectedNode().deleteSelf(action);
-				}
-			}.bind(this);
-			this.renameNode = function () {
-				if (this.selectedNode() !== undefined) {
-					this.selectedNode().isRenaming(true);
-				}
-			}.bind(this);
-        }
-    };
-	
-	ko.addTemplateSafe("nodeTemplate", "\
-					{{if hasContext() }}\
-						<li class=\"${cssClass}\" data-bind=\"contextMenu : contextMenu, css: { empty: !hasChildren(), open: isOpen, rename: isRenaming }\" data-id=\"${ id() }\">\
-					{{else}}\
-						<li class=\"${cssClass}\" data-bind=\"css: { empty: !hasChildren(), open: isOpen, rename: isRenaming }\" data-id=\"${ id() }\">\
-					{{/if}}\
-						<div class=\"node\" data-bind=\"nodeDrag : isDraggable(), nodeDrop: { active : isDropTarget(), onDropComplete: move }, css :{ selected: isSelected }, hover : 'hover', event : { dblclick : doubleClick, mousedown: clicked }\">\
-							{{if hasChildren() }}\
-								<span class=\"handle\" data-bind=\"click: toggleFolder, bubble : false, style: { marginLeft: indent() }, hover : 'hover'\"></span>{{else}}<span class=\"handle\" data-bind=\"style: { marginLeft: indent() }\"></span>{{/if}}<span class=\"icon\"></span><label data-bind=\"visible: !isRenaming()\" unselectable=\"on\">${ name }</label><input class=\"rename\" type=\"text\" data-bind=\"nodeRename: name, onRenameComplete : rename, nodeSelectVisible: isRenaming\"/>\
-						</div>\
-						{{if hasChildren() }}\
-							<ul data-bind='visible: isOpen, template: { name: \"nodeTemplate\", foreach: children }'></ul>\
-						{{/if}}\
-					</li>", templateEngine);
-	
-	ko.addTemplateSafe("containerTemplate", "<ul class=\"tree\" data-bind='template: { name : \"nodeTemplate\", foreach: children }'></ul>", templateEngine);
-
-	ko.bindingHandlers.nodeDrag = {
-		init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
-			var $element = $(element),
-				node = viewModel,
-				dragOptions = {	
-					revert: 'invalid',
-					revertDuration: 250,
-					cancel: 'span.handle',
-					cursor: typeValueOrDefault('dragCursor', node.type(), node.viewModel),
-					cursorAt: typeValueOrDefault('dragCursorAt', node.type(), node.viewModel),
-					appendTo : 'body',
-					connectToSortable : viewModel.connectToSortable(),
-					helper: function (event, element) { 
-						var helper = typeValueOrDefault('dragHelper', node.type(), node.viewModel); 
-						return helper.call(viewModel, event, element); 
-					},
-					zIndex: 200000,
-					addClasses: false,
-					distance: 10,
-					start : function (e, ui) {
-						viewModel.isdragHolder();
-						viewModel.viewModel.handlers.startDrag(viewModel);
-					},
-					stop : function (e, ui) {
-						viewModel.viewModel.handlers.endDrag(viewModel);
-					}
-				};
-			
-			$element.draggable(dragOptions);
-		},
-		update : function (element, valueAccessor, allBindingsAccessor, viewModel) {
-			var $element = $(element),
-				active = ko.utils.unwrapObservable(valueAccessor());
-			
-			if (!active) {
-				$element.draggable('disable');
-			} else {
-				$element.draggable('enable');
-			}
+		droppable: {
+			addClasses: false,
+			greedy: true,
+			tolerance: "pointer",
+			hoverClass: "ui-drop-target"
 		}
 	};
-	
-	ko.bindingHandlers.nodeDrop = {
-		init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+
+	exports.ANode = core.Component.extend({
+		init: function(config) {
+			var self = this, nodes = [], node,
+				i, l = config.nodes ? config.nodes.length : 0
+			;
+			this._super(config);
+
+			for (i = 0; i < l; i += 1) {
+				node = new this.nodeType(
+					core.extend(config.nodes[i],
+						{
+							options: this.options,
+							parent: this
+						}
+					)
+				);
+				nodes.push(node);
+			}
+			this.nodes = ko.observableArray(nodes);
+			// disconnected children length container to allow ajax expand
+			this.children = ko.observable(!!(this.nodes().length || config.children));
+
+			this.nodes.subscribe(function() {
+				self.children(!!self.nodes().length);
+			});
+
+			this.parent = config.parent;
+		},
+		get: function(id, skipChildren, skipRecurse) {
+			if (this.id === id) {
+				return this;
+			}
+			if (skipChildren) {
+				return null;
+			}
+			var result = null,
+				count = this.nodes.length,
+				i
+			;
+			for (i = 0; i < count; i += 1) {
+				result = this.nodes[i].get(id, skipRecurse);
+				if (result) {
+					return result;
+				}
+			}
+			return result;
+		},
+		notifySelfAndRoot: function(config) {
+			var event = core.createEvent(config),
+				result = this.notify(config.name, event)
+			;
+			if (!event.isPropogationStopped() && !result && this.root) {
+				result = this.root.notify(config.name, event);
+			}
+			if (!event.isDefaultPrevented()) {
+				return core.when(result);
+			}
+			return { then: core.NOOP };
+		},
+		add: function(nodeDefOrArray, edit) {
+			var self = this;
+
+			nodeDefOrArray = core.isArray(nodeDefOrArray) ?
+					nodeDefOrArray : [ nodeDefOrArray ];
+
+			this.notifySelfAndRoot({
+				name: self.options.events.added,
+				nodes: ko.utils.arrayMap(nodeDefOrArray, function(el) {
+					return core.extend(
+						{
+							title: self.options.node.title
+						}, el, {
+							parentId: self.id || -1,
+							parentType: self.type
+						}
+					);
+				})
+			})
+			.then(function(nodesOrArray) {
+				var nodes = core.isArray(nodesOrArray) ? nodesOrArray : [nodesOrArray],
+					newNodes = ko.utils.arrayMap(nodes, function(el) {
+						return new self.nodeType(core.extend(el, {
+							options: self.options,
+							parent: self
+						}));
+					})
+				;
+				self.nodes.push.apply(self.nodes, newNodes);
+				self.toggle(true);
+				if (edit) {
+					newNodes[0].select(true);
+					newNodes[0].edit();
+				}
+			}.bind(this));
+		},
+		toggle: core.NOOP,
+		toString: function() {
+			return this.title() + " (" + this.id + ")";
+		}
+	});
+
+	exports.TreeNode = exports.ANode.extend({
+		init: function(config) {
+			core.extend(true, { exlude: ["nodes"] }, this, config);
+
+			this.root = config.parent.root || config.parent;
+			this.options = config.options || this.root.options;
+
+			this.title = ko.observable(config.title || this.options.node.title);
+
+			// behavioral observables
+			this.open = ko.observable(config.open || false);
+			this.editing = ko.observable(config.editing || false);
+			this.selected = ko.observable(false);
+			this.draggable = config.draggable || this.options.node.draggable;
+			this.droppable = config.droppable || this.options.node.droppable;
+			this.loading = ko.observable(false);
+
+			this.type = config.type || this.options.node.childType || "folder";
+			this.nodeType = exports.TreeNode;
+
+			this.level = ko.observable(core.unwrap(config.parent.level) + 1);
+
+			this._super(config);
+		},
+		toggle: function(value) {
+			this.notifySelfAndRoot({
+				name: this.options.events.toggle,
+				node: this,
+				force: value
+			})
+			.then(function(children) {
+				this.open.toggle(value);
+				if (children && this.open() && this.children() && !this.nodes().length) {
+					this.add(children);
+				}
+			}.bind(this));
+		},
+		select: function(deselectAll) {
+			this.notifySelfAndRoot({
+				name: this.options.events.click,
+				node: this
+			})
+			.then(function () {
+				this.selected.toggle();
+				if (this.selected()) {
+					if (deselectAll) {
+						ko.utils.arrayForEach(this.root.selected, function(item) {
+							item.selected(false);
+						});
+						this.root.selected = [];
+					}
+					this.root.selected.push(this);
+				} else {
+					ko.utils.arrayRemoveItem(this.root.selected, this);
+				}
+			}.bind(this));
+		},
+		context: function() {
+			this.notifySelfAndRoot({
+				name: this.options.events.context,
+				node: this
+			});
+		},
+		dblClick: function() {
+			this.notifySelfAndRoot({
+				name: this.options.events.dblClick,
+				node: this
+			});
+		},
+		move: function(parent) {
+			if (this.parent !== parent && !parent.isDescendentOf(this)) {
+				this.notifySelfAndRoot({
+					name: this.options.events.moved,
+					node: this,
+					to: parent
+				}).then(function() {
+					this.parent.nodes.remove(this);
+					parent.nodes.push(this);
+					this.parent = parent;
+					this.level(core.unwrap(this.parent.level) + 1);
+				}.bind(this));
+			}
+		},
+		edit: function() {
+			this.notifySelfAndRoot({
+				name: this.options.events.edit,
+				node: this
+			})
+			.then(function () {
+				this.previousValue = this.title();
+				this.editing(true);
+				this.root.editing = this;
+			}.bind(this));
+		},
+		rename: function() {
+			if (this.editing()) {
+				this.notifySelfAndRoot({
+					name: this.options.events.renamed,
+					node: this,
+					from: this.previousValue,
+					to: this.title()
+				})
+				.then(function () {
+					this.editing(false);
+					this.root.editing = null;
+				}.bind(this));
+			}
+		},
+		isDescendentOf: function(node) {
+			if (node === this) {
+				return true;
+			}
+			var parent = this.parent;
+			do {
+				if (parent === node) {
+					return true;
+				}
+				parent = parent.parent;
+			} while (parent);
+
+			return false;
+		}
+	});
+
+	exports.Tree = exports.ANode.extend({
+		init: function(config) {
+			var self = this;
+			this.options = core.extend({}, defaults, config.options);
+
+			this.level = -1;
+			this.nodeType = exports.TreeNode;
+			this.selected = [];
+
+			this._super(config);
+
+			$("body").click(function() {
+				if (self.editing) {
+					self.editing.rename();
+				}
+			});
+		},
+		add: function(nodeDef) {
+			if (this.selected.length) {
+				this.selected[this.selected.length - 1].add(nodeDef, true);
+			} else {
+				this._super(nodeDef, true);
+			}
+		},
+		edit: function() {
+			if (this.selected.length) {
+				this.selected[this.selected.length - 1].edit();
+			}
+		},
+		remove: function() {
+			var working = this.selected.slice(0),
+				result = [], i, l;
+			while (working.length) {
+				var selected = working.pop(), child = false;
+				for (i = 0, l = working.length; i < l; i += 1) {
+					if (selected.isDescendentOf(working[i])) {
+						child = true;
+						break;
+					}
+				}
+				if (!child) {
+					result.push(selected);
+				}
+			}
+			this.notifySelfAndRoot({
+				name: this.options.events.removed,
+				nodes: result
+			})
+			.then(function () {
+				for (i = 0, l = result.length; i < l; i += 1) {
+					result[i].parent.nodes.remove(result[i]);
+				}
+			});
+		}
+	});
+
+	ko.bindingHandlers.tree = {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+			var value = core.unwrap(valueAccessor());
+			if (!(value instanceof exports.Tree)) {
+				throw new Error("The tree binding requires an instance of ko.ui.Tree viewModel");
+			}
+			ko.renderTemplate(value.options.templates.tree,
+				value, { },
+				element.appendChild(document.createElement('div')), "replaceNode");
+
+			return { controlsDescendantBindings: true };
+        }
+    };
+
+    ko.bindingHandlers.UITreeNode = {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
 			var $element = $(element),
-				value = valueAccessor() || {},
-				handler = ko.utils.unwrapObservable(value.onDropComplete),
-				dropOptions = {	
-					greedy: true,
-					tolerance: 'pointer',
-					addClasses: false,
-					drop: function (e, ui) {
-						setTimeout(function () { 
-							handler(viewModel.dropped()); 
+				actualDrop, actualDrag,
+				dragOptions, dropOptions,
+				draggable, clickBuster
+			;
+			ko.proxyBinding.call(this, "init", element, allBindingsAccessor, viewModel, {
+				event: function() {
+					return {
+						click: function(n, e) {
+							if (!clickBuster) {
+								viewModel.select(!e.metaKey);
+							} else {
+								clickBuster = false;
+							}
+						},
+						dblclick: viewModel.dblClick,
+						contextmenu: function(n, e) {
+							viewModel.context();
+							clickBuster = true;
+							return false;
+						}
+					};
+				}
+			});
+
+			ko.utils.domData.set(element, ITEMKEY, viewModel);
+
+			if (core.unwrap(viewModel.draggable)) {
+				actualDrag = viewModel.options.draggable.drop;
+				dragOptions = core.extend({}, viewModel.options.draggable, {
+					start: function(e, ui) {
+						if (actualDrag) {
+							actualDrag.apply(this, arguments);
+						}
+					}
+				});
+				$element.draggable(dragOptions);
+			}
+			if (core.unwrap(viewModel.droppable)) {
+				actualDrop = viewModel.options.droppable.drag;
+				dropOptions = core.extend({}, viewModel.options.droppable, {
+					drop: function(e, ui) {
+						if (actualDrop) {
+							actualDrop.apply(this, arguments);
+						}
+						setTimeout(
+							function() {
+								ko.utils.domData.get(ui.draggable.get(0), ITEMKEY)
+									.move(viewModel);
 						}, 0);
 					}
-				};
-			$element.droppable(dropOptions);
-		},
-		update : function (element, valueAccessor, allBindingsAccessor, viewModel) {
-			var $element = $(element),
-				active = ko.utils.unwrapObservable(valueAccessor()).active;
-			
-			if (!active) {
-				$element.droppable('disable');
-			} else {
-				$element.droppable('enable');
+				});
+				$element.droppable(dropOptions);
 			}
-		}
-	};
-					
-	ko.bindingHandlers.nodeSelectVisible = {
-		'update': function (element, valueAccessor) {
-			ko.bindingHandlers.visible.update(element, valueAccessor);
-			var isCurrentlyInvisible = element.style.display === "none";
-			if (!isCurrentlyInvisible) {
-				element.select();
-			}
-		}
-	};
-	
-	ko.bindingHandlers.nodeRename = {
-		updateValue : function (element, valueAccessor, allBindingsAccessor, viewModel) {
-			var handler = allBindingsAccessor().onRenameComplete,
-				elementValue = ko.selectExtensions.readValue(element);
-			handler(elementValue);
-			viewModel.isRenaming(false);
-		},
-		'init': function (element, valueAccessor, allBindingsAccessor, viewModel) {
-			var $element = $(element),
-				updateHandler = function () { 
-					ko.bindingHandlers.nodeRename.updateValue(element, valueAccessor, allBindingsAccessor, viewModel); 
-				};
-					
-			$element.click(function () { return false; }).focus('focus', function () {
-				/* add scroll to element on focus http://stackoverflow.com/questions/4217962/scroll-to-an-element-using-jquery*/
+
+			ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+				if ($element.draggable) { $element.draggable("destroy"); }
+				if ($element.droppable) { $element.droppable("destroy"); }
 			});
-			$element.bind('blur', updateHandler);
-			$element.bind('keyup', function (e) { 
-				if (e.which === 13) {
-					updateHandler();
+        },
+        update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+			ko.proxyBinding.call(this, "update", element, allBindingsAccessor, viewModel, {
+				attr: function() {
+					return { class: viewModel.options.css.node };
+				},
+				css: function() {
+					var config = {};
+					config[viewModel.options.css.selected] = viewModel.selected;
+					config[viewModel.options.css.open] = viewModel.open;
+					config[viewModel.type] = true;
+					return config;
 				}
 			});
-		},
-		'update': function (element, valueAccessor, allBindingsAccessor, viewModel) {
-			ko.bindingHandlers.value.update(element, valueAccessor);
-		}
-	};
-					
-    // The main tree binding
-    ko.bindingHandlers.tree = {
-        init: function (element, viewModelAccessor, allBindingsAccessor, viewModel) {
-			var value = viewModelAccessor(), treeContainer;
-			// needed to recalculate node sizes when multiple trees
-			value.tree = element;
-			
-			treeContainer = element.appendChild(document.createElement("DIV"));	
-			logger('Initialize tree ' + value.children().length + ' root nodes found', value.logTo);
-			
-            ko.renderTemplate("containerTemplate", value, { templateEngine: templateEngine }, treeContainer, "replaceNode");
-			
-			value.recalculateSizes();
         }
     };
-}());
+
+    ko.bindingHandlers.UITreeNodeHandle = {
+		init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+			var $el = $(element),
+				setIndent = function(newLevel) {
+					$el.css("marginLeft", (newLevel * viewModel.options.node.indent));
+				}
+			;
+			viewModel.level.subscribe(setIndent);
+			setIndent(viewModel.level());
+			ko.bindingHandlers.click.init.call(this, element, function() {
+				return function () {
+					viewModel.toggle();
+				};
+			}, allBindingsAccessor, viewModel);
+		},
+        update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+			ko.bindingHandlers.attr.update.call(this, element, function() {
+				return {
+					class: ko.computed({
+						read: function() {
+							var css = viewModel.options.css.handle;
+							css += viewModel.children() ? "" : (" " + viewModel.options.css.emptyHandle);
+							return css;
+						},
+						disposeWhenNodeIsRemoved: element
+					})
+				};
+			}, allBindingsAccessor, viewModel);
+		}
+    };
+
+    ko.bindingHandlers.UITreeNodeIcon = {
+		init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+			ko.bindingHandlers.attr.update.call(this, element, function() {
+				return { class: viewModel.options.css.icon };
+			}, allBindingsAccessor, viewModel);
+		}
+    };
+
+    ko.bindingHandlers.UITreeNodeLabel = {
+        update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+			ko.proxyBinding.call(this, "update", element, allBindingsAccessor, viewModel, {
+				text: function() {
+					return viewModel.title;
+				},
+				visible: function() {
+					return ko.computed(function() {
+						return !viewModel.editing();
+					});
+				}
+			});
+        }
+    };
+
+    ko.bindingHandlers.UITreeNodeTextBox = {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, context) {
+			ko.proxyBinding.call(this, "init", element, allBindingsAccessor, viewModel, {
+				event: function() {
+					return {
+						click: function(n, e) {
+							e.stopPropagation();
+						},
+						blur: viewModel.rename
+					};
+				},
+				value: function() {
+					return viewModel.title;
+				}
+			});
+			viewModel.editing.subscribe(function(editing) {
+				if (editing) {
+					setTimeout(function() {
+						element.focus();
+						element.select();
+					}, 0);
+				}
+			});
+        },
+        update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+			ko.proxyBinding.call(this, "update", element, allBindingsAccessor, viewModel, {
+				visible: function() {
+					return viewModel.editing;
+				},
+				value: function() {
+					return viewModel.title;
+				}
+			});
+        }
+    };
+}));

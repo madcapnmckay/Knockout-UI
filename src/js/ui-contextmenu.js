@@ -1,15 +1,4 @@
-/*global document, window, $, ko, debug, setTimeout, alert */
-/*
- * Knockout UI Content Menu
- * 
- * Copyright (c) 2011 Ian Mckay
- *
- * https://github.com/madcapnmckay/Knockout-UI
- *
- * License: MIT http://www.opensource.org/licenses/mit-license.php
- *
- */
-(function () {
+/*(function () {
     // Private function
     var logger = function (log) {
 			if (typeof debug !== 'undefined')
@@ -207,4 +196,4 @@
 			$element.position(options); 
 		}
     };
-}());
+}());*/
