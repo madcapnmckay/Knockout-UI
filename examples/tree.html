@@ -89,7 +89,7 @@
 					handlers: { 
 						addNode : function (parent, type, name, onSuccess) { 
 							nextId = nextId + 1; 
-							onSuccess({ id: nextId, parent: parent, name: name }); 
+							onSuccess({ id: nextId, parent: parent, name: name, cssClass: type }); 
 						}		
 					},
 					logTo : '#log1',
