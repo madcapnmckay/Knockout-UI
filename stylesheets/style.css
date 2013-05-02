@@ -38,11 +38,19 @@ a {
   text-decoration:none;
 }
 
+a:hover {
+  color:#069;
+}
+
 a small {
   font-size:11px;
   color:#777;
   margin-top:-0.6em;
   display:block;
+}
+
+a:hover small {
+  color:#777;
 }
 
 .wrapper {
@@ -101,7 +109,7 @@ header {
   position:fixed;
 }
 
-header ul {
+header ul.buttons {
   list-style:none;
   height:40px;
   
@@ -121,21 +129,49 @@ header ul {
   width:270px;
 }
 
-header li {
+header ul.buttons li {
   width:89px;
   float:left;
   border-right:1px solid #d2d2d2;
   height:40px;
 }
 
-header ul a {
+header ul.buttons li:first-child a {
+  border-radius:5px 0 0 5px;
+}
+
+header ul.buttons li:last-child a {
+  border-radius:0 5px 5px 0;
+}
+
+header ul.buttons a {
   line-height:1;
   font-size:11px;
   color:#999;
   display:block;
   text-align:center;
   padding-top:6px;
-  height:40px;
+  height:34px;
+}
+
+header ul.buttons a:hover {
+  color:#999;
+  background: -moz-linear-gradient(top, #fff 0%, #ddd 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fff), color-stop(100%,#ddd));
+  background: -webkit-linear-gradient(top, #fff 0%,#ddd 100%);
+  background: -o-linear-gradient(top, #fff 0%,#ddd 100%);
+  background: -ms-linear-gradient(top, #fff 0%,#ddd 100%);
+  background: linear-gradient(top, #fff 0%,#ddd 100%);
+}
+
+header ul.buttons a:active {
+  -webkit-box-shadow: inset 0px 2px 2px 0px #ddd;
+  -moz-box-shadow: inset 0px 2px 2px 0px #ddd;
+  box-shadow: inset 0px 2px 2px 0px #ddd;
+}
+
+header ul.links a {
+  font-size:16px;
 }
 
 strong {
@@ -143,17 +179,17 @@ strong {
   font-weight:700;
 }
 
-header ul li + li {
+header ul.buttons li + li {
   width:88px;
   border-left:1px solid #fff;
 }
 
-header ul li + li + li {
+header ul.buttons li + li + li {
   border-right:none;
   width:89px;
 }
 
-header ul a strong {
+header ul.buttons a strong {
   font-size:14px;
   display:block;
   color:#222;
@@ -211,7 +247,7 @@ footer {
     display:inline;
   }
   
-  header ul {
+  header ul.buttons {
     position:absolute;
     right:50px;
     top:52px;
@@ -227,7 +263,7 @@ footer {
     padding:0;
   }
   
-  header ul, header p.view {
+  header ul.buttons, header p.view {
     position:static;
   }
   
@@ -241,7 +277,7 @@ footer {
     padding:15px;
   }
   
-  header ul {
+  header ul.buttons {
     display:none;
   }
 }
