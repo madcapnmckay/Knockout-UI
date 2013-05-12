@@ -28,14 +28,14 @@
 					"<label data-bind='UITreeNodeLabel: {}'></label>",
 					"<input type='text' data-bind='UITreeNodeTextBox: {}' />",
 				"</div>",
-				"<ul data-bind='template: { name: 'tmpl_ui_tree_node', foreach: nodes }, visible: open'></ul>",
+				"<ul data-bind='template: { name: \"tmpl_ui_tree_node\", foreach: nodes }, visible: open'></ul>",
 			"</li>"
 		].join("")
 	);
 
 	ko.addTemplate(
 		"tmpl_ui_tree",
-		"<ul data-bind='template: { name: 'tmpl_ui_tree_node', foreach: nodes }, attr: { class: options.css.tree }'></ul>"
+		"<ul data-bind='template: { name: \"tmpl_ui_tree_node\", foreach: nodes }, attr: { class: options.css.tree }'></ul>"
 	);
 
 	exports.defaults = exports.defaults || {};
@@ -81,10 +81,9 @@
 			dragCursor: "auto",
 			distance: 10,
 			zIndex: 200000,
-			helper: function(event, element, css) {
-				return $('<div></div>').addClass("drag-icon")
-						.append($('<span></span>')
-							.addClass(css));
+			helper: function(event, element) {
+				return $('<div></div>').addClass("ui-drag-icon")
+						.append($('<span></span>'));
 			}
 		},
 		droppable: {
@@ -221,6 +220,9 @@
 			this._super(config);
 		},
 		toggle: function(value) {
+			if (!this.children()) {
+				return false;
+			}
 			this.notifySelfAndRoot({
 				name: this.options.events.toggle,
 				node: this,
@@ -426,6 +428,8 @@
 						if (actualDrag) {
 							actualDrag.apply(this, arguments);
 						}
+						// add the type css class to the draggable helper
+						$(ui.helper).addClass(viewModel.type);
 					}
 				});
 				$element.draggable(dragOptions);

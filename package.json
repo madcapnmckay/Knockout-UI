@@ -30,6 +30,7 @@
     "grunt-contrib-cssmin": "~0.6.0",
     "grunt-contrib-clean": "~0.4.0",
     "grunt-contrib-concat": "~0.1.3",
-    "jqueryui-browser": "~1.10.0-2"
+    "jqueryui-browser": "~1.10.0-2",
+    "grunt-contrib-sass": "~0.3.0"
   }
 }

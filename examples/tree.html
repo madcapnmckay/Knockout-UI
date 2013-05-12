@@ -1,577 +1,151 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-	<title>Knockout UI - Tree Binding</title>
-	<link rel="stylesheet" href="css/reset.css" type="text/css"/>
-	<link rel="stylesheet" href="css/style.css" type="text/css"/>
-	<link rel="stylesheet" href="css/shCore.css" type="text/css"/>
-	<link rel="stylesheet" href="css/shThemeDefault.css" type="text/css"/>
-
-	<!-- Dependencies -->
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.ui.core.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.ui.widget.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.ui.mouse.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.ui.position.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.ui.draggable.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.ui.droppable.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
-	<script type="text/javascript" src="../lib/knockout-1.2.1.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.cookie.js"></script>
-	
-	<script type="text/javascript" src="js/shCore.js"></script>
-	<script type="text/javascript" src="js/shBrushXml.js"></script>
-	<script type="text/javascript" src="js/shBrushJScript.js"></script>
-	
-	<link rel="stylesheet" href="../css/ui-tree.css" type="text/css"/>
-	<link rel="stylesheet" href="../css/ui-contextmenu.css" type="text/css"/>
-	<script type="text/javascript" src="../js/ui-util.js"></script>
-	<script type="text/javascript" src="../js/ui-contextmenu.js"></script>	
-	<script type="text/javascript" src="../js/ui-tree.js"></script>	
+<head>
+	<meta charset="utf-8">
+	<title>Knockout UI - Tree Demo</title>
+	<link rel="stylesheet" href="../build/css/ui-tree.css" />
 </head>
 <body>
-	<div class="central-column">
-		<h1>Tree Binding</h1>
-		<p>The tree binding provides a full tree implementation replicating much of the functionality of a standard windows explorer tree.</p>
-		<p>Features include, drag & drop, rename, delete, icon styling, customizable default behavior for each node type</p>
-		<p>The tree also integrates with the <a href="context-menu.html">context menu binding</a> to allow each node to display a custom context menu.</p>
-		<p>A set of global behavior configuration controls each nodes behavior and can be overridden by supplying a viewModel.defaults configuration object. 
-		Multiple node types are allowed and each node type can have it's own behavior configured using the viewModel.defaults.typename options.</p>
-		<p>If the <a href="https://github.com/carhartl/jquery-cookie">jquery cookie plugin</a> is included the tree will remember which nodes were expanded/closed when the page was last loaded.</p> 
-		<p><strong>Note: </strong>This feature will not work in chrome from a local file version of this example due to a restriction on writing local cookies.</p>
-		<h2>Usage (with context menu)</h2>
-		<h3>Markup</h3>
-		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
-			<label>
-				Currently Selected Node : <span data-bind="text: treeViewModel1.selectedNode() != undefined ? treeViewModel1.selectedNode().name : 'none'"></span>
-				<span data-bind="text: treeViewModel1.selectedNode() != undefined ? '(' + treeViewModel1.selectedNode().children().length + ' children)' : ''"></span>
-			<label style="color:Red;">Currently dragging <span data-bind="text : treeViewModel1.dragHolder() != undefined ? treeViewModel1.dragHolder().name : 'Nothing'"></span></label>
-			</label>
-			<div class="container">				
-				<div class="left-container">
-					<div data-bind="tree : treeViewModel1"></div>
-				</div>
-				<div class="right-container">
-					<div style="padding: 10px;">
-						<a href="#" id="add" data-bind="click : function() { treeViewModel1.addNode(); }">Add</a>
-						<a href="#" id="delete" data-bind="click : treeViewModel1.deleteNode">Delete</a>
-						<a href="#" id="delete" data-bind="click : treeViewModel1.renameNode">Rename</a>
-					</div>
-					<div id="log1" class="logger">
-					</div>
-				</div>
-			</div>
-		]]></script>
-		<h3>Javascript</h3>
-		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
-			var debug = true, globalDragHolder, nextId = 20; // this is used to simulate an id being returned from the backend
-			var myModel = {
-				tree1 : { 
-					id : 'pages',
-					remember : true,
-					children: [
-						{ name: "Annabelle", id : '1', isOpen : true, children : [ 
-								{ name: "Arnie",  cssClass : 'page', id : '5', children : [] }, 
-								{ name: "Anders", cssClass : 'page', id : '6', children : [] }, 
-								{ name: "Apple", cssClass : 'page', id : '7', children : [] } 
-							] 
-						},
-						{ name: "Bertie", id : '2', children : [ 
-								{ name: "Boutros-Boutros", cssClass : 'page', id : '8', children : [] }, 
-								{ name: "Brianna", cssClass : 'page', id : '9', children : [] }, 
-								{ name: "Barbie", cssClass : 'page', id : '10', children : [] }, 
-								{ name: "Bee-bop", id : '4', children : [] } 
-							] 
-						},
-						{ name: "Charles", id : '3', children : [] }
-					],
-					dragHolder : ko.observable(undefined),
-					handlers: { 
-						addNode : function (parent, type, name, onSuccess) { 
-							nextId = nextId + 1; 
-							onSuccess({ id: nextId, parent: parent, name: name }); 
-						}		
-					},
-					logTo : '#log1',
-					defaults : {
-						'folder' : {
-							name : 'New Folder',
-							childType : 'page'
-						},
-						'page' : {
-							name : 'New Page',
-							isDraggable : true,
-							isDropTarget : false,
-							canAddChildren : false
-						}
-					},
-					contextMenu : { 
-									contextMenus : 
-									[
-										{ 
-											name : 'foldercontext',
-											width : 190,
-											items : [ 
-												{ text : 'Delete',  run : function(dataItem) { 
-															dataItem.deleteSelf(); 
-														} 
-												},  
-												{ text : 'Rename',   run : function(dataItem) { 
-															dataItem.isRenaming(true); 
-														} 
-												}, 
-												{ separator : true },
-												{ text : 'New', 
-													items : [
-														{ 
-															text : 'Page', 
-															iconCssClass: 'page', 
-															run : 	function(dataItem) { 
-																		dataItem.addChild({ type : 'page' });
-																	} 
-														},
-														{ 
-															text : 'Folder', 
-															iconCssClass: 'folder', 
-															run : 	function(dataItem) { 
-																		dataItem.addChild({ type: 'folder' }); 
-																	} 
-														},
-													] }
-											]
-										},
-										{ 
-											name : 'pagecontext',
-											width : 190,
-											items : [ 
-												{ text : 'Delete',  run : function(dataItem) { 
-															dataItem.deleteSelf(); 
-														} 
-												},  
-												{ text : 'Rename',   run : function(dataItem) { 
-															dataItem.isRenaming(true); 
-														} 
-												}
-											]
-										}
-									],
-									build : function(event, dataItem) {
-										dataItem.selectNode();
-										var type = dataItem.type();
-										if (type == 'folder') {
-											return { name : 'foldercontext' };
-										} else {
-											return { name : 'pagecontext' };
-										}
-									}
-					}
-				}
-			}
-			myModel.treeViewModel1 = new ko.tree.viewModel(myModel.tree1); 
-			
-			ko.applyBindings(myModel);
-		]]></script>
-		<h3>Results</h3>
-		<div class="results">
-			<label>
-				Currently Selected Node : <span data-bind="text: treeViewModel1.selectedNode() != undefined ? treeViewModel1.selectedNode().name : 'none'"></span>
-				<span data-bind="text: treeViewModel1.selectedNode() != undefined ? '(' + treeViewModel1.selectedNode().children().length + ' children)' : ''"></span>
-			<label style="color:Red;">Currently dragging <span data-bind="text : treeViewModel1.dragHolder() != undefined ? treeViewModel1.dragHolder().name : 'Nothing'"></span></label>
-			</label>
-			<div class="container">				
-				<div class="left-container">
-					<div data-bind="tree : treeViewModel1"></div>
-				</div>
-				<div class="right-container">
-					<div style="padding: 10px;">
-						<a href="#" id="add" data-bind="click : function() { treeViewModel1.addNode(); }">Add</a>
-						<a href="#" id="delete" data-bind="click : treeViewModel1.deleteNode">Delete</a>
-						<a href="#" id="delete" data-bind="click : treeViewModel1.renameNode">Rename</a>
-					</div>
-					<div id="log1" class="logger">
-					</div>
-				</div>
-			</div>
-			<p>Right click a node to view the context menu</p>
-		</div>
-		<h2>Usage (alternative styles and behavior)</h2>
-		<h3>Markup</h3>
-		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
-			<label>
-				Currently Selected Node : <span data-bind="text: treeViewModel2.selectedNode() != undefined ? treeViewModel2.selectedNode().name : 'none'"></span>
-				<span data-bind="text: treeViewModel2.selectedNode() != undefined ? '(' + treeViewModel2.selectedNode().children().length + ' children)' : ''"></span>
-			<label style="color:Red;">Currently dragging <span data-bind="text : treeViewModel2.dragHolder() != undefined ? treeViewModel2.dragHolder().name : 'Nothing'"></span></label>
-			</label>
-			<div class="container">				
-				<div class="left-container">
-					<div data-bind="tree : treeViewModel2"></div>
-				</div>
-				<div class="right-container">
-					<div style="padding: 10px;">
-						<a href="#" id="add" data-bind="click : function() { treeViewModel2.addNode(); }">Add</a>
-						<a href="#" id="delete" data-bind="click : treeViewModel2.deleteNode">Delete</a>
-						<a href="#" id="delete" data-bind="click : treeViewModel2.renameNode">Rename</a>
-					</div>
-					<div id="log2" class="logger">
-					</div>
-				</div>
-			</div>
-		]]></script>
-		<h3>Javascript</h3>
-		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
-			var debug = true, globalDragHolder, nextId = 20; // this is used to simulate an id being returned from the backend
-			var myModel = {
-				tree2 : { 
-					id : 'pages',
-					remember : true,
-					children: [
-						{ name: "Tom", id : '1', cssClass : 'group', children : [ 
-								{ name: "Arnie", cssClass : 'widget', id : '5', children : [] }, 
-								{ name: "Anders", cssClass : 'widget', id : '6', children : [] }, 
-								{ name: "Apple", cssClass : 'widget', id : '7', children : [] } 
-							] 
-						},
-						{ name: "Dick", id : '2', cssClass : 'group', isOpen : true, children : [ 
-								{ name: "Boutros-Boutros", cssClass : 'widget', id : '8', children : [] }, 
-								{ name: "Brianna", cssClass : 'widget', id : '9', children : [] }, 
-								{ name: "Barbie", cssClass : 'widget', id : '10', children : [] }, 
-								{ name: "Bee-bop", cssClass : 'widget', id : '11', children : [] } 
-							]
-						},
-						{ name: "Harry", id : '3', cssClass : 'group', children : [] }
-					],
-					dragHolder : ko.observable(undefined),
-					handlers: { 
-						addNode : function (parent, type, name, onSuccess) { 
-							nextId = nextId + 1; 
-							onSuccess(nextId);
-						}		
-					},
-					logTo : '#log2',
-					defaults : {
-						'widget' : {
-							name : 'New Widget',
-							isDraggable : true,
-							isDropTarget : false,
-							canAddChildren : false
-						},
-						'group' : {
-							isDraggable : false,
-							isDropTarget : true,
-							canAddChildren : true
-						}
-					}
-				}
-			}
-			myModel.treeViewModel2 = new ko.tree.viewModel(myModel.tree2); 
-			
-			ko.applyBindings(myModel);
-		]]></script>
-		<h3>Results</h3>
-		<div class="results">
-			<label>
-				Currently Selected Node : <span data-bind="text: treeViewModel2.selectedNode() != undefined ? treeViewModel2.selectedNode().name : 'none'"></span>
-				<span data-bind="text: treeViewModel2.selectedNode() != undefined ? '(' + treeViewModel2.selectedNode().children().length + ' children)' : ''"></span>
-			<label style="color:Red;">Currently dragging <span data-bind="text : treeViewModel2.dragHolder() != undefined ? treeViewModel2.dragHolder().name : 'Nothing'"></span></label>
-			</label>
-			<div class="container">				
-				<div class="left-container">
-					<div data-bind="tree : treeViewModel2"></div>
-				</div>
-				<div class="right-container">
-					<div style="padding: 10px;">
-						<a href="#" id="add" data-bind="click : function() { treeViewModel2.addNode(); }">Add</a>
-						<a href="#" id="delete" data-bind="click : treeViewModel2.deleteNode">Delete</a>
-						<a href="#" id="delete" data-bind="click : treeViewModel2.renameNode">Rename</a>
-					</div>
-					<div id="log2" class="logger">
-					</div>
-				</div>
-			</div>
-			<p>Notice the different icons, the groups are not draggable but the widgets are.</p>
-		</div>
-		<h3>Options</h3>
-		<div class="options">
-			<h4>Tree ViewModel</h4>
-			<table>
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Description</th>
-						<th>Default</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>defaults</td>
-						<td>
-							<p>The defaults object defines the behavior for all node types.</p>
-							<p>Type specific overrides can be supplied as defaults.typename definitions with the same options as the global.</p>
-						</td>
-						<td><ul>
-								<li>isDraggable : true</li>
-								<li>isDropTarget : true</li>
-								<li>canAddChildren : true</li>
-								<li>childType : 'folder'</li>
-								<li>renameAfterAdd : true</li>
-								<li>connectToSortable : false</li>
-								<li>dragCursorAt : { left: 28, bottom: 0 }</li>
-								<li>dragCursor : 'auto'</li>
-								<li>dragHelper :<br/> 
-												<div style="width:400px;">
-												<script type="syntaxhighlighter" class="brush: js"><![CDATA[
-													function (event, element) { 
-														return $('<div></div>').addClass("drag-icon").append($('<span></span>').addClass(this.cssClass())); 
-													}
-												</script>
-												</div>
-								</li>
-								</ul></td>
-					</tr>
-					<tr><td>children</td><td>The array of root nodes. There is no explicit root node instead the parent viewmodel is considered the root.</td><td></td></tr>
-					<tr><td>logTo</td><td>The jquery selector of the log div to use to display status info.</td><td>#log</td></tr>
-					<tr><td>remember</td><td>Whether the state of the tree is saved in a cookie</td><td>false</td></tr>
-					<tr><td>dragHolder</td><td>A global observable needed to contain the node currently being dragged. 
-							Needed to allow drag and drop between trees and sortables etc.</td><td></td></tr>
-					<tr>
-						<td>handlers</td>
-						<td>
-							<p>An extendable object containing handlers that are called for each tree operation</p>
-							<p>The handlers you can override are 'selectNode', 'addNode', 'renameNode', 'deleteNode', 'moveNode', 'startDrag' & 'endDrag'</p>
-							<p>The handlers are your opportunity to verify that the operation is valid. In the case of select, add, rename, delete and move operations, the calling of onSuccess confirms the operation (perhaps after receiving the result from an ajax operation).</p>
-							<p>When 'addNode' is called the new id for the created node must be returned to the onSuccess callback.</p>
-						</td>
-						<td>
-							<div style="width:400px;">
-							<script type="syntaxhighlighter" class="brush: js"><![CDATA[
-								selectNode : function (node, onSuccess) {
-									logger('select node ' + node.name(), configuration.logTo); 
-									onSuccess();
-								},
-								addNode : function (parent, type, name, onSuccess) { 
-									logger('add new node ', configuration.logTo); 
-									// create node data to pass back
-									onSuccess({ id: 10, parent: parent, name: name }); 
-								},
-								renameNode : function (node, from, to, onSuccess) { 
-									logger('rename node "' + from + '" to "' + to + '"', configuration.logTo); 
-									onSuccess(); 
-								},
-								deleteNode : function (node, action, onSuccess) { 
-									logger('delete node "' + node.name() + '"', configuration.logTo); 
-									onSuccess(); 
-								},
-								moveNode :  function (node, newParent, onSuccess) { 
-									logger('move node "' + node.name() + '" to "' + newParent.name() + '"', configuration.logTo); 
-									onSuccess(); 
-								},
-								doubleClick : function (node) {
-									logger('doubled clicked ' + node.name(), configuration.logTo); 
-								},
-								startDrag : function (node) { 
-									logger('start drag', configuration.logTo); 
-								},
-								endDrag : function (node) { 
-									logger('stop drag', configuration.logTo); 
-								}
-							]]></script>
-							</div>
-						</td></tr>
-				</tbody>
-			</table>
-			<h4>Nodes</h4>
-			<table>
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Description</th>
-						<th>Default</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr><td>cssClass</td><td>The default css class applied to all node. This acts are the node type name.</td><td>'folder'</td></tr>
-					<tr><td>name</td><td>The name of the node displayed in the tree</td><td></td></tr>
-					<tr><td>id</td><td>The id of the node.</td><td></td></tr>
-					<tr><td>children</td><td>An array of child nodes.</td><td></td></tr>
-					<tr><td>isOpen</td><td>Whether the node is in an open state initially.</td><td></td></tr>
-				</tbody>
-			</table>
-		</div>
-		<h3>Dependencies</h3>
-		<ul class="dependencies">
-			<li>Knockout 1.2.0</li>
-			<li>Jquery 1.6+</li>
-			<li>Jquery tmpl</li>
-			<li>Jquery cookie (optional)</li>
-			<li>Jquery UI Core</li>
-			<li>Jquery UI Widget</li>
-			<li>Jquery UI Mouse</li>
-			<li>Jquery UI Draggable</li>
-			<li>Jquery UI Droppable</li>
-			<li>Jquery UI Position (if context menu used)</li>
-			<li>Knockout UI Util</li>
-			<li>Knockout UI Context Menu (optional)</li>
-		</ul>
-		<div class="footer">
-			<ul>
-				<li>License: <a href="http://www.opensource.org/licenses/mit-license.php">MIT http://www.opensource.org/licenses/mit-license.php</a></li>
-				<li>Project Home: <a href="https://github.com/madcapnmckay/Knockout-UI">https://github.com/madcapnmckay/Knockout-UI</a></li>
-				<li>Icons: <a href="http://p.yusukekamiyamane.com/">Yusuke Kamiyamane</a></li>
-			</ul>
-		</div>
-	</div>
-	<script type="text/javascript">	
-		var debug = true, globalDragHolder, nextId = 20; // this is used to simulate an id being returned from the backend
-		var myModel = {
-			tree1 : { 
-				id : 'pages',
-				remember : true,
-				children: [
-					{ name: "Annabelle", id : '1', isOpen : true, children : [ 
-							{ name: "Arnie",  cssClass : 'page', id : '5', children : [] }, 
-							{ name: "Anders", cssClass : 'page', id : '6', children : [] }, 
-							{ name: "Apple", cssClass : 'page', id : '7', children : [] } 
+	<div data-bind="tree : tree" style="width: 300px;"></div>
+
+	<button data-bind="click: rename, clickBubble: false">Rename</button>
+	<button data-bind="click: add">Add</button>
+	<button data-bind="click: remove">Remove</button>
+
+	<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.0.min.js"></script>
+	<script src="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.10.2/jquery-ui.min.js"></script>
+	<script src="../node_modules/knockout-client/knockout.js"></script>
+	<script  src="../src/js/ui-core.js"></script>
+	<script  src="../src/js/ui-tree.js"></script>
+	
+	<script type="text/javascript">
+
+
+		var ViewModel = function() {
+			var self = this;
+
+			this.tree = new ko.ui.Tree({
+				nodes: [
+					{ 
+						id: 1, title: "Tom", 
+						nodes : [ 
+							{ id: 5, title: "Arnie" }, 
+							{ id: 6, title: "Anders" }, 
+							{ id: 7, title: "Apple" } 
 						] 
 					},
-					{ name: "Bertie", id : '2', children : [ 
-							{ name: "Boutros-Boutros", cssClass : 'page', id : '8', children : [] }, 
-							{ name: "Brianna", cssClass : 'page', id : '9', children : [] }, 
-							{ name: "Barbie", cssClass : 'page', id : '10', children : [] }, 
-							{ name: "Bee-bop", id : '4', children : [] } 
-						] 
-					},
-					{ name: "Charles", id : '3', children : [] }
-				],
-				dragHolder : ko.observable(undefined),
-				handlers: { 
-					addNode : function (parent, type, name, onSuccess) { 
-						nextId = nextId + 1; 
-						onSuccess({ id: nextId, parent: parent, name: name }); 
-					}		
-				},
-				logTo : '#log1',
-				defaults : {
-					'folder' : {
-						name : 'New Folder',
-						childType : 'page'
-					},
-					'page' : {
-						name : 'New Page',
-						isDraggable : true,
-						isDropTarget : false,
-						canAddChildren : false
-					}
-				},
-				contextMenu : { 
-								contextMenus : 
-								[
-									{ 
-										name : 'foldercontext',
-										width : 190,
-										items : [ 
-											{ text : 'Delete',  run : function(dataItem) { 
-														dataItem.deleteSelf(); 
-													} 
-											},  
-											{ text : 'Rename',   run : function(dataItem) { 
-														dataItem.isRenaming(true); 
-													} 
-											}, 
-											{ separator : true },
-											{ text : 'New', 
-												items : [
-													{ 
-														text : 'Page', 
-														iconCssClass: 'page', 
-														run : 	function(dataItem) { 
-																	dataItem.addChild({ type : 'page' });
-																} 
-													},
-													{ 
-														text : 'Folder', 
-														iconCssClass: 'folder', 
-														run : 	function(dataItem) { 
-																	dataItem.addChild({ type: 'folder' }); 
-																} 
-													},
-												] }
-										]
-									},
-									{ 
-										name : 'pagecontext',
-										width : 190,
-										items : [ 
-											{ text : 'Delete',  run : function(dataItem) { 
-														dataItem.deleteSelf(); 
-													} 
-											},  
-											{ text : 'Rename',   run : function(dataItem) { 
-														dataItem.isRenaming(true); 
-													} 
-											}
-										]
-									}
-								],
-								build : function(event, dataItem) {
-									dataItem.selectNode();
-									var type = dataItem.type();
-									if (type == 'folder') {
-										return { name : 'foldercontext' };
-									} else {
-										return { name : 'pagecontext' };
-									}
-								}
-				}
-			},
-			tree2 : { 
-				id : 'pages',
-				remember : true,
-				children: [
-					{ name: "Tom", id : '1', cssClass : 'group', children : [ 
-							{ name: "Arnie", cssClass : 'widget', id : '5', children : [] }, 
-							{ name: "Anders", cssClass : 'widget', id : '6', children : [] }, 
-							{ name: "Apple", cssClass : 'widget', id : '7', children : [] } 
-						] 
-					},
-					{ name: "Dick", id : '2', cssClass : 'group', isOpen : true, children : [ 
-							{ name: "Boutros-Boutros", cssClass : 'widget', id : '8', children : [] }, 
-							{ name: "Brianna", cssClass : 'widget', id : '9', children : [] }, 
-							{ name: "Barbie", cssClass : 'widget', id : '10', children : [] }, 
-							{ name: "Bee-bop", cssClass : 'widget', id : '11', children : [] } 
+					{ 
+						id: 2, title: "Dick", expanded: true, 
+						nodes : [ 
+							{ id: 8, title: "Boutros-Boutros"}, 
+							{ id: 9, title: "Brianna" }, 
+							{ id: 10, title: "Barbie" }, 
+							{ id: 11, title: "Bee-bop", children: true } // children loaded on expand, needed for correct icon
 						]
 					},
-					{ name: "Harry", id : '3', cssClass : 'group', children : [] }
-				],
-				dragHolder : ko.observable(undefined),
-				handlers: { 
-					addNode : function (parent, type, name, onSuccess) { 
-						nextId = nextId + 1; 
-						onSuccess(nextId);
-					}		
-				},
-				logTo : '#log2',
-				defaults : {
-					'widget' : {
-						name : 'New Widget',
-						isDraggable : true,
-						isDropTarget : false,
-						canAddChildren : false
-					},
-					'group' : {
-						isDraggable : false,
-						isDropTarget : true,
-						canAddChildren : true
+					{ 
+						id: 3, title: "Harry", type: 'widget'
 					}
+				]
+			});
+			// get (id) returns node
+			// remove (idOrNode) 
+			// add (nodeDef)
+
+			this.tree.subscribe("click", function(event) {
+				// event.node
+				// return false cancels
+				console.log("click " + event.node.toString());
+				return false;
+			});
+
+			this.tree.subscribe("context", function(event) {
+				// event.node
+				// return false cancels
+				console.log("context " + event.node.title());
+			});
+
+			this.tree.subscribe("dblClick", function(event) {
+				// event.node
+				// return false cancels
+				console.log("dblClick " + event.node.title());
+			});
+
+			this.tree.subscribe("toggle", function(event) {
+				// event.node
+				// return false cancels
+				console.log("toggle " + event.node.title());
+				return [{ id: ++id, title: "Ajax loaded child" }];
+			});
+
+			this.tree.subscribe("edit", function(event) {
+				// event.node
+				// return false cancels
+				console.log("edit " + event.node.title());
+			});
+
+			this.tree.subscribe("renamed", function(event) {
+				// event.node
+				// event.oldName
+				// event.newName
+				// return false cancels
+				// return promise 
+				console.log("renamed " + event.from + " to "  + event.to);
+			});
+
+			this.tree.subscribe("moved", function(event) {
+				// event.node-
+				// event.to
+				// return false cancels
+				// return promise
+				console.log("moved " + event.node.toString() + " to " + event.to.toString());
+			});
+
+			var id = 11;
+			this.tree.subscribe("added", function(event) {
+				// event.parent
+				// event.node
+
+				// return false cancels
+				// return promise
+				// return node
+				for (var i = 0; i < event.nodes.length; i += 1) {
+					console.log("added " + event.nodes[i].title);
+				}		
+				return ko.utils.arrayMap(event.nodes, function(el) {
+					return { id: ++id, title: el.title };
+				});
+			});
+
+			this.tree.subscribe("removed", function(event) {
+				// event.node
+				// return false cancels
+				// resturn promise
+				// return node
+				for (var i =0; i < event.nodes.length; i += 1) {
+					console.log("removed " + event.nodes[i].title());	
 				}
-			}
-		}
-		myModel.treeViewModel1 = new ko.tree.viewModel(myModel.tree1); 
-		myModel.treeViewModel2 = new ko.tree.viewModel(myModel.tree2); 
+			});
+			
+			this.rename = function() {
+				self.tree.edit();
+				return false;
+			};
+
+			this.add = function() {
+				self.tree.add();
+			};
+
+			this.remove = function() {
+				self.tree.remove();
+			};
+			
+		};
+		var vm = new ViewModel();
 		
 		$(function () {
-			SyntaxHighlighter.all();
-		
-			ko.applyBindings(myModel);
+			ko.applyBindings(vm);
 		});
 	</script>
 </body>
