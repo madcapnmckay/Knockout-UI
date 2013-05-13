@@ -1,5 +1,6 @@
 $FONT-SIZE: 12px;
 $ASSET-DIR: "../../assets/";
+$HEIGHT: 21px;
 $NODE-HEIGHT: 16px;
 $ICON-WIDTH: 16px;
 $ICON-HEIGHT: $NODE-HEIGHT;
@@ -27,6 +28,7 @@ $BORDER-COLOR-NODE-SELECTED: #B8D6FB;
     }
 
     .ui-node {
+        height: $HEIGHT;
         padding: 2px 1px;
         position: relative;
         -moz-border-radius:2px 2px 2px 2px;
@@ -48,7 +50,7 @@ $BORDER-COLOR-NODE-SELECTED: #B8D6FB;
             border: 1px solid #646464;
             vertical-align: middle;
             padding: 0;
-            height: $NODE-HEIGHT; 
+            height: $HEIGHT; 
             margin-left: 4px;
             outline: none;
             position: absolute;

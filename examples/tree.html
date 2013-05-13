@@ -4,14 +4,18 @@
 <head>
 	<meta charset="utf-8">
 	<title>Knockout UI - Tree Demo</title>
+	<link rel="stylesheet" href="../src/css/examples.css" />
 	<link rel="stylesheet" href="../build/css/ui-tree.css" />
 </head>
 <body>
 	<div data-bind="tree : tree" style="width: 300px;"></div>
 
-	<button data-bind="click: rename, clickBubble: false">Rename</button>
-	<button data-bind="click: add">Add</button>
-	<button data-bind="click: remove">Remove</button>
+	<div class="button-group">
+		<h2>Example actions</h2>
+		<button class="btn" data-bind="click: rename, clickBubble: false">Rename</button>
+		<button class="btn" data-bind="click: add">Add</button>
+		<button class="btn" data-bind="click: remove">Remove</button>
+	</div>
 
 	<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.0.min.js"></script>
 	<script src="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.10.2/jquery-ui.min.js"></script>
