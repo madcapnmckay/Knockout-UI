@@ -19,7 +19,7 @@
 		[
 			"<div data-bind='attr: { class : defaults.css }' >",
 				"<ul data-bind='foreach: tabs'>",
-					"<li data-bind='click: $parent.show, css: { 'active' : $parent.active() === $data,  class: css }, text: name'></li>",
+					"<li data-bind='click: $parent.show.bind($parent), css: { \"ui-tab-active\" : $parent.active() === $data }, class: css, text: name'></li>",
 				"</ul>",
 				"<div data-bind='foreach: tabs'>",
 					"<div data-bind='visible: $parent.active() === $data, attr: { class: bodyCss }'>",
@@ -45,6 +45,8 @@
 	exports.TabSet = function(config) {
 		var self = this;
 
+		this.foo = 'TabSet';
+
 		this.defaults = {
 			css : "ui-tabs",
 			tab : {
@@ -63,19 +65,18 @@
 		this.tabs = ko.observableArray(buttons);
 		this.active = ko.observable();
 
-		this.show = function(tabOrIndex) {
-			var tab = tabOrIndex instanceof exports.Tab ? tabOrIndex : this.get(tabOrIndex);
-			if (!tab) {
-				throw new Error("Show method must be passed a tab index or a tab instance");
-			}
-			self.active(tab);
-		};
-
 		// show defined tab
 		if (this.tabs().length) {
 			this.show(config.active || 0);
 		}
 	};
+	exports.TabSet.prototype.show = function(tabOrIndex) {
+		var tab = tabOrIndex instanceof exports.Tab ? tabOrIndex : this.get(tabOrIndex);
+		if (!tab) {
+			throw new Error("Show failed: method must be passed a tab index or a tab instance");
+		}
+		this.active(tab);
+	},
 	exports.TabSet.prototype.find = function(name) {
 		return this.get(this.indexOf(name));
 	};

@@ -1,0 +1,59 @@
+$BORDER-COLOR: #DDDDDD;
+$BORDER-COLOR-HOVER: #EEEEEE;
+$BORDER-COLOR-ACTIVE: #DDDDDD;
+$BACKGROUND-COLOR-HOVER: #EEEEEE;
+$BACKGROUND-COLOR-ACTIVE: #FFFFFF;
+
+.ui-tabs {
+
+    > ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-bottom: 1px solid $BORDER-COLOR;
+
+        &:after {
+            clear: both;
+        }  
+
+        &:before, &:after {
+            display: table;
+            line-height: 0;
+            content: "";
+        } 
+    }
+    
+    .ui-tab {
+        float: left;
+        position: relative;
+        padding: 8px 12px;
+        margin-right: 2px;
+        line-height: 20px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        -webkit-border-radius: 4px 4px 0 0;
+        -moz-border-radius: 4px 4px 0 0;
+        border-radius: 4px 4px 0 0;
+        top: 1px;
+    }
+    .ui-tab:hover {
+        border-color: $BORDER-COLOR-HOVER;
+        border-bottom-width: 0;
+        text-decoration: none;
+        background-color: $BACKGROUND-COLOR-HOVER;
+    }
+    
+    .ui-tab-active {
+        color: #555555;
+        cursor: default;
+        background-color: $BACKGROUND-COLOR-ACTIVE;
+        border: 1px solid $BORDER-COLOR-ACTIVE;
+        border-bottom-color: transparent;
+    }
+
+    .ui-tab-body {
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-width: 0 1px 1px 1px;
+    }
+}

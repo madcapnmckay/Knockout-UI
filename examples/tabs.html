@@ -1,156 +1,75 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<!doctype html>
+<html lang="en">
 <head>
+<head>
+	<meta charset="utf-8">
 	<title>Knockout UI - Tabs Demo</title>
-	<link rel="stylesheet" href="css/reset.css" type="text/css"/>
-	<link rel="stylesheet" href="css/style.css" type="text/css"/>
-	<link rel="stylesheet" href="css/shCore.css" type="text/css"/>
-	<link rel="stylesheet" href="css/shThemeDefault.css" type="text/css"/>
-
-	<!-- Dependencies -->
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.tmpl.js"></script>
-	<script type="text/javascript" src="../lib/knockout-1.2.1.min.js"></script>
-	<script type="text/javascript" src="../lib/jquery.cookie.js"></script>
-
-	<!-- Not a dependency just for the example -->
-	<script type="text/javascript" src="js/shCore.js"></script>
-	<script type="text/javascript" src="js/shBrushXml.js"></script>
-	<script type="text/javascript" src="js/shBrushJScript.js"></script>
-	<script type="text/javascript" src="js/splitter.js"></script>
-	<style>
-		.tabs-body { height: 423px; overflow: hidden; width: 496px;  }
-		.tabs-body { overflow:auto; }
-		.tab-body-inner { background-color:White; }
-		.vsplitbar { width: 1px; height: 423px; border-right: solid 1px #D6E5F5;  }
-	</style>
-	<link rel="stylesheet" href="../css/ui-tabs.css" type="text/css"/>
-	<script type="text/javascript" src="../js/ui-util.js"></script>
-	<script type="text/javascript" src="../js/ui-tabs.js"></script>	
+	<link rel="stylesheet" href="../src/css/examples.css" />
+	<link rel="stylesheet" href="../build/css/ui-tabs.css" />
 </head>
 <body>
-	<div class="central-column">
-		<h1>Tabs Binding</h1>
-		<p>The tabs binding is a simple implementation of the ubiquitous javascript tabs.</p>
-		<p>Useful in template binding scenarios where you need tabs in a more complex Knockout interface.</p>
-		<p>If the <a href="https://github.com/carhartl/jquery-cookie">jquery cookie plugin</a> is included the tabs will remember which one was selected.</p> 
-		<p><strong>Note: </strong>This feature will not work in chrome from a local file version of this example due to a restriction on writing local cookies.</p>
-		<h2>Usage</h2>
-		<h3>Markup</h3>
-		<script type="syntaxhighlighter" class="brush: xml"><![CDATA[
-			<div data-bind="tabs : tabsViewModel, style: { width: width() + 'px' }" style="border:1px solid Gray;"></div>
-		]]></script>
-		<h3>Javascript</h3>
-		<script type="syntaxhighlighter" class="brush: js"><![CDATA[
-			var createTab1 = function(element, viewModel, parentViewModel) {
-				$(element)
-						.append('<div>Im the left-hand panel<br/>This uses the jquery splitter plugin to produce a split explorer window effect.</div>')
-						.append('<div>Im the right-hand panel</div>');
-				$(element).splitter();
-			}
-		
-			var createTab2 = function(element, viewModel, parentViewModel) {
-				$(element).append('<div>Tab 2 Here</div>');
-			}
-			
-			var createTab3 = function(element, viewModel, parentViewModel) {
-				$(element).append('<div>Tab 3 Here</div>');
-			}
-		
-			var myModel = {
-				width : ko.observable(500),
-				tabs: [
-					{ name: "Tab1", bodyCssClass : 'tabs-body', create : createTab1, iconCssClass : 'tab1', isActive : true },
-					{ name: "Tab2", bodyCssClass : 'tabs-body', create : createTab2, iconCssClass : 'tab2' },
-					{ name: "Tab3", bodyCssClass : 'tabs-body', create : createTab3, iconCssClass : 'tab3' }
-				]
-			};
-			myModel.tabsViewModel = new ko.tabs.viewModel({ id: 'mytabs', tabs: myModel.tabs, remember : true });  
-			
-			ko.applyBindings(myModel);
-		]]></script>
-		<h3>Results</h3>
-		<div data-bind="tabs : tabsViewModel, style: { width: width() + 'px' }" style="border:1px solid Gray;"></div>
-		<h3>Options</h3>
-		<div class="options">
-			<h4>Tab Set</h4>
-			<table>
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Description</th>
-						<th>Default</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr><td>id</td><td>An id for the tab set, used to identify the the tab state in the cookie</td><td></td></tr>
-					<tr><td>tabs</td><td>An array of tab definitions.</td><td></td></tr>
-					<tr><td>remember</td><td>Whether the state of the tabs is saved in a cookie</td><td>false</td></tr>
-				</tbody>
-			</table>
-			<h4>Tab Definitions</h4>
-			<table>
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Description</th>
-						<th>Default</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr><td>name</td><td>The name that appears in the tab itself. Also used as the unique identifier.</td><td>'folder'</td></tr>
-					<tr><td>bodyCssClass</td><td>The css class applied to be inner tab body div.</td><td></td></tr>
-					<tr><td>create</td><td>Function used to create the tab body. This can be a function definition or the string name of the function. The tabs will try to evaluate the string if a function type is not detected (useful when the configuration is passed via json).</td><td></td></tr>
-					<tr><td>iconCssClass</td><td>A cssClass applied to a span inside each tab, can be used to add an icon.</td><td></td></tr>
-					<tr><td>isActive</td><td>Whether the is selected initially.</td><td></td></tr>
-				</tbody>
-			</table>
-		</div>
-		<h3>Dependencies</h3>
-		<ul class="dependencies">
-			<li>Knockout 1.2.0</li>
-			<li>Jquery 1.6+</li>
-			<li>Jquery tmpl</li>
-			<li>Jquery cookie (optional)</li>
-			<li>Knockout UI Util</li>
-		</ul>
-		<div class="footer">
-			<ul>
-				<li>License: <a href="http://www.opensource.org/licenses/mit-license.php">MIT http://www.opensource.org/licenses/mit-license.php</a></li>
-				<li>Project Home: <a href="https://github.com/madcapnmckay/Knockout-UI">https://github.com/madcapnmckay/Knockout-UI</a></li>
-			</ul>
-		</div>
+	<div data-bind="tabs : tabSet" style="width: 500px"></div>
+
+	<div class="button-group">
+		<h2>Example actions</h2>
+		<button class="btn" data-bind="click: addNewTab">Add tab to end</button>
+		<button class="btn" data-bind="click: removeFirst">Remove First</button>
+		<button class="btn" data-bind="click: removeFirst">Remove First Tab</button>
+		<button class="btn" data-bind="click: updateFirstName">Update First Tab Name</button>
+		<button class="btn" data-bind="click: showSecondTab">Show second tab</button>
 	</div>
+
+	<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.0.min.js"></script>
+	<script src="../node_modules/knockout-client/knockout.js"></script>
+	<script  src="../src/js/ui-core.js"></script>
+	<script  src="../src/js/ui-tabs.js"></script>
+
 	<script type="text/javascript">
-		var createTab1 = function(element, viewModel, parentViewModel) {
-			$(element)
-					.append('<div>Im the left-hand panel<br/>This uses the jquery splitter plugin to produce a split explorer window effect.</div>')
-					.append('<div>Im the right-hand panel</div>');
-			$(element).splitter();
-		}
-	
-		var createTab2 = function(element, viewModel, parentViewModel) {
-			$(element).append('<div>Tab 2 Here</div>');
-		}
-		
-		var createTab3 = function(element, viewModel, parentViewModel) {
-			$(element).append('<div>Tab 3 Here</div>');
-		}
-	
-		var myModel = {
-			width : ko.observable(500),
-			tabs: [
-				{ name: "Tab1", bodyCssClass : 'tabs-body', create : createTab1, iconCssClass : 'tab1', isActive : true },
-				{ name: "Tab2", bodyCssClass : 'tabs-body', create : createTab2, iconCssClass : 'tab2' },
-				{ name: "Tab3", bodyCssClass : 'tabs-body', create : createTab3, iconCssClass : 'tab3' }
-			]
+
+		ko.addTemplate("tmpl_tab1", "<div>Tab1</div>");
+		ko.addTemplate("tmpl_tab2", "<div>Tab2</div>");
+		ko.addTemplate("tmpl_tab3", "<div data-bind=\"text: title\"></div>");
+
+		var ViewModel = function() {
+			var tabs;
+
+			this.tabSet = tabs = new ko.ui.TabSet({
+				tabs: [
+					{ name: ko.observable("Tab 1"), template: "tmpl_tab1" },
+					{ name: "Tab 2", template: "tmpl_tab2" },
+					{ name: "Tab 3", template: "tmpl_tab3", data: { title: "Hello from tab 3" } }
+				]
+			});
+
+			this.addNewTab = function() {
+				var number = tabs.tabs().length + 1;
+				tabs.add({ name: "Tab " + number, template: "tmpl_tab3", data: { title: "Hello from tab " + number } });
+			};
+
+			this.removeFirst = function() {
+				tabs.remove("Tab 1");
+				tabs.show(0);
+			};
+
+			this.removeFirst = function() {
+				tabs.removeAt(0);
+				tabs.show(0);
+			};
+
+			this.updateFirstName = function() {
+				var tab = tabs.get(0);
+				if (tab) {
+					tab.name("First Tab");
+				}
+			};
+
+			this.showSecondTab = function() {
+				tabs.show(1);
+			};
 		};
-		myModel.tabsViewModel = new ko.tabs.viewModel({ id: 'mytabs', tabs: myModel.tabs, remember : true }); 
 		
 		$(function () {
-			SyntaxHighlighter.all();
-		
-			ko.applyBindings(myModel);
+			ko.applyBindings(new ViewModel());
 		});
 	</script>
 </body>
