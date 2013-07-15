@@ -229,6 +229,17 @@
 			this.move = function (node) {
 				var that = this;
 				viewModel.handlers.moveNode(node, this, function () {
+					
+					// check that 'that' is not a descendent of 'node'
+					// otherwise abort
+					var ancestor = that
+					while ( ancestor && ancestor.parent )
+					{
+						ancestor = ancestor.parent()
+						if ( ancestor == node )
+							return
+					}
+					
 					node.parent().children.remove(node);
 					node.parent(that);
 					that.children.push(node);
